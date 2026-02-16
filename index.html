@@ -1,12 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staartdeling – interactieve oefening</title>
-  <link rel="stylesheet" href="styles.css  <h1>Staartdeling</h1>
-    <p class="subtitle">Één oefening per keer • foutjes rood gemarkeerd met uitleg bij hover</p>
+  <title>Staartdeling — Interactieve oefensite</title>
+  <meta name="description" content="Oefen staartdelingen interactief: met of zonder rest, optioneel verder tot 0,001 en met controle-rooster." />
+  styles.css
+</head>
+<body>
+  <header>
+    <h1>Staartdeling</h1>
+    <p class="subtitle">Één oefening per keer • fouten rood gemarkeerd met uitleg bij hover</p>
   </header>
 
   <section class="controls" aria-labelledby="instellingen-h2">
@@ -17,22 +21,30 @@
         <label><input type="radio" name="rest" value="zonder" checked> Deling die uitkomt (géén rest)</label>
         <label><input type="radio" name="rest" value="met"> Deling met rest</label>
       </fieldset>
+
       <fieldset>
         <legend>Decimalen</legend>
         <label>
           <input type="checkbox" id="toDecimals"> Ga verder tot <strong>0,001</strong> (max. 3 decimalen)
         </label>
       </fieldset>
+
       <fieldset>
         <legend>Controle</legend>
         <label>
-          <input type="checkbox" id="enableCheck"> Toon controle-rooster (× en + rest)
+          <input type="checkbox" id="enableCheck"> Toon controle‑rooster
         </label>
       </fieldset>
+
       <div class="ranges">
-        <label>Deeltal (2–10000): <input id="rangeDividend" type="number" min="2" max="10000" step="1" placeholder="(automatisch)"/></label>
-        <label>Deler (2–20): <input id="rangeDivisor" type="number" min="2" max="20" step="1" placeholder="(automatisch)"/></label>
+        <label>Deeltal (2–10000):
+          <input id="rangeDividend" type="number" min="2" max="10000" step="1" placeholder="(automatisch)"/>
+        </label>
+        <label>Deler (2–20):
+          <input id="rangeDivisor" type="number" min="2" max="20" step="1" placeholder="(automatisch)"/>
+        </label>
       </div>
+
       <div class="buttons">
         <button type="button" id="btnNew">Nieuwe oefening</button>
         <button type="button" id="btnCheck">Nakijken</button>
@@ -45,9 +57,13 @@
   <main>
     <section id="exercise" aria-labelledby="oefening-h2">
       <h2 id="oefening-h2">Oefening</h2>
+
+      <!-- Hoofd-oefening -->
       <div id="divisionHost" class="division"></div>
+
+      <!-- Controle-rooster (apart openklapbaar) -->
       <details id="checkDetails">
-        <summary>Controle-rooster</summary>
+        <summary>Controle‑rooster</summary>
         <div id="checkHost" class="check"></div>
       </details>
     </section>
@@ -57,7 +73,7 @@
     <p><small>Tip: ga met de muis op een <span class="error demo">rode cel</span> staan om de feedback te lezen.</small></p>
   </footer>
 
-  <!-- Staartdeling-sjabloon -->
+  <!-- Sjabloon: staartdeling -->
   <template id="tpl-division">
     <div class="long-division" role="group" aria-label="Staartdeling">
       <div class="top">
@@ -68,12 +84,13 @@
         </div>
         <div class="quotient" aria-label="Quotiënt (boven de staart)"></div>
       </div>
+
       <div class="work" aria-label="Werkzone (tussenproducten)"></div>
       <p class="note"></p>
     </div>
   </template>
 
-  <!-- Controle-sjabloon -->
+  <!-- Sjabloon: controle -->
   <template id="tpl-check">
     <div class="checker" role="group" aria-label="Controle">
       <div class="row">
@@ -90,13 +107,17 @@
         <span>=</span>
         <input class="sum-input" inputmode="numeric" autocomplete="off" />
       </div>
-      <p class="hint">Vul het quotiënt in, vermenigvuldig met de deler en tel er (indien nodig) de rest bij. Het resultaat moet gelijk zijn aan het deeltal.</p>
+      <p class="hint">
+        Vul het quotiënt in, vermenigvuldig met de deler en tel er (indien nodig) de rest bij.
+        Het resultaat moet gelijk zijn aan het deeltal.
+      </p>
     </div>
   </template>
 
   app.js</script>
 </body>
 </html>
+
 
 * { box-sizing: border-box; }
 :root {
