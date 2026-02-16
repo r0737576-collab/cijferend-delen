@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — rasterbasis</title>
+<title>Staartdeling — klassieke rasteropmaak</title>
 
 <style>
 /* ============================================================
-   BASISSTIJLEN
+   BASIS
    ============================================================ */
 :root{
   --ink:#000;
@@ -17,84 +17,48 @@
   --bar:4px;         /* horizontale dikke lijn */
 }
 
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto;
-  background:#f3f3f3;
-  color:#000;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  background:#f3f3f3; color:#000;
 }
 
 header, .toolbar{
-  background:#fff;
-  border-bottom:1px solid #ddd;
-  padding:.8rem 1rem;
+  background:#fff; border-bottom:1px solid #ddd; padding:.8rem 1rem;
 }
 
 .toolbar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:.6rem;
-  align-items:center;
+  display:flex; flex-wrap:wrap; gap:.6rem; align-items:center;
 }
-
 .group{
-  display:flex;
-  gap:.4rem;
-  align-items:center;
-  background:#f1f1f1;
-  border:1px solid #ddd;
-  border-radius:.4rem;
+  display:flex; gap:.4rem; align-items:center;
+  background:#f1f1f1; border:1px solid #ddd; border-radius:.4rem;
   padding:.3rem .5rem;
 }
-
 button{
-  padding:.45rem .7rem;
-  border:1px solid #bbb;
-  border-radius:.4rem;
-  background:white;
-  cursor:pointer;
+  padding:.45rem .7rem; border:1px solid #bbb; border-radius:.4rem; background:#fff; cursor:pointer;
 }
+button:hover{ border-color:#000; }
 
-button:hover{
-  border-color:#000;
-}
-
-main{
-  padding:1rem;
-}
-
+main{ padding:1rem; }
 .board{
-  background:#fff;
-  border:1px solid #ddd;
-  border-radius:.6rem;
-  padding:1rem;
-  max-width:900px;
-  margin:auto;
+  background:#fff; border:1px solid #ddd; border-radius:.6rem; padding:1rem;
+  max-width:980px; margin:auto;
 }
 
 /* ============================================================
-   RASTERDEFINITIES
+   RASTER (Excel-look) voor deeltal, deler, quotiënt
    ============================================================ */
-
-/* Algemene Excel-vakjes */
-.gridcell{
-  width:var(--cell);
-  height:var(--cell);
-  border-right:1px solid var(--grid);
-  border-bottom:1px solid var(--grid);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-weight:600;
-  font-size:1.3rem;
+.gridcell, .wcell{
+  width:var(--cell); height:var(--cell);
+  border-right:1px solid var(--grid); border-bottom:1px solid var(--grid);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:600; font-size:1.2rem;
 }
+.gridcell:last-child, .wcell:last-child{ border-right:none; }
 
-.gridcell:last-child{
-  border-right:none;
-}
-
-/* Deeltal-raster */
-#grid{
+#grid, #divGrid, #quotGrid{
   display:grid;
   grid-auto-flow:column;
   grid-auto-columns:var(--cell);
@@ -102,64 +66,53 @@ main{
   border:1px solid var(--grid);
 }
 
-/* Deler-raster */
-#divGrid{
-  display:grid;
-  grid-auto-flow:column;
-  grid-auto-columns:var(--cell);
-  grid-template-rows:var(--cell);
-  border:1px solid var(--grid);
-}
-
-/* Quotiënt-raster */
-#quotGrid{
-  display:grid;
-  grid-auto-flow:column;
-  grid-auto-columns:var(--cell);
-  grid-template-rows:var(--cell);
-  border:1px solid var(--grid);
-}
-
-/* Grijze decimale cellen */
-.gray{
-  color:#888;
-}
+.gray{ color:#888; }
 
 /* ============================================================
-   VERTICALE & HORIZONTALE LIJNEN
-   ============================================================ */
-#vline{
-  width:var(--vline);
-  background:black;
-  margin-left:.15rem;    /* superklein zoals je vroeg */
-  margin-right:.35rem;
-  border-radius:2px;
-  align-self:stretch;
-}
-
-#hbar{
-  height:var(--bar);
-  background:black;
-  border-radius:2px;
-  margin-top:.4rem;
-}
-
-/* ============================================================
-   LAYOUTSTRUCTUUR
+   LAYOUT: [leftSide(deeltal + werk)] | [vline] | [rightSide(div, bar, quot)]
    ============================================================ */
 #gridWrapper{
-  display:flex;
-  align-items:flex-start;
-  gap:.3rem; /* minimale ruimte */
+  display:flex; align-items:flex-start; gap:.3rem; /* zeer kleine ruimte */
+}
+#leftSide{
+  display:flex; flex-direction:column; gap:.6rem; /* werkgebied onder deeltal */
 }
 
+/* verticale dikke lijn (midden) */
+#vline{
+  width:var(--vline); background:black;
+  margin-left:.15rem; margin-right:.35rem; border-radius:2px;
+  align-self:stretch; /* rekt mee in de hoogte */
+}
+
+/* rechterzijde: deler boven, daaronder bar en quotiënt */
 #rightSide{
-  display:flex;
-  flex-direction:column;
-  gap:.5rem;
-  padding-top:.1rem;
+  display:flex; flex-direction:column; gap:.5rem; padding-top:.05rem;
+}
+#hbar{
+  height:var(--bar); background:black; border-radius:2px;
 }
 
+/* ============================================================
+   WERKGEDEELTE (klassiek verschuivend kolomsgewijs)
+   ============================================================ */
+#workArea{
+  --cols: 4; /* wordt dynamisch gezet in JS */
+  display:flex; flex-direction:column; gap:.15rem;
+}
+.workRow{
+  display:grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+}
+.wcell.topline{ border-top:2px solid #000; }   /* subtractielijn boven rest */
+.wcell.arrow{ font-weight:700; }               /* ↓ bij ‘laten zakken’ */
+.wcell.light{ color:#999; font-weight:500; }   /* cosmetisch voor hulpcellen */
+
+@media print{
+  header,.toolbar{ display:none !important; }
+  main{ padding:0 }
+  .board{ border:none }
+}
 </style>
 </head>
 
@@ -188,19 +141,22 @@ main{
 </div>
 
 <!-- ============================================================
-     HOOFDBORD (LAYOUT BASIS)
+     HOOFDLAYOUT
      ============================================================ -->
 <main>
   <section class="board">
     <div id="gridWrapper">
 
-      <!-- LINKS: DEELTAL IN RASTER -->
-      <div id="grid"></div>
+      <!-- LINKS: deeltal + werk -->
+      <div id="leftSide">
+        <div id="grid"></div>
+        <div id="workArea"></div>
+      </div>
 
-      <!-- MIDDEN: DIKKE VERTICALE LIJN -->
+      <!-- MIDDEN: verticale dikke lijn -->
       <div id="vline"></div>
 
-      <!-- RECHTS: DELER + HORIZONTALE LIJN + QUOTIENT-RUIMTE -->
+      <!-- RECHTS: deler + horizontale lijn + quotiënt -->
       <div id="rightSide">
         <div id="divGrid"></div>
         <div id="hbar"></div>
@@ -213,93 +169,239 @@ main{
 
 <script>
 /* ============================================================
-   JAVASCRIPT – DELETAL, DELER & QUOTIENT-RUIMTE
+   JAVASCRIPT – LAYOUT & KLASSIEKE UITWERKING
    ============================================================ */
-
 (function(){
 
   const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-  const $ = s => document.querySelector(s);
+  const $  = s => document.querySelector(s);
 
-  /* ---------- Deeltal-raster ---------- */
-  function makeGrid(dividend, decimals){
-    const g = $("#grid");
-    g.innerHTML = "";
+  /* ---------- Genereer oefening ---------- */
+  const settings = { dividendMax: 10000, divisorMax: 20 };
 
-    // gewone cijfers
-    String(dividend).split("").forEach(ch=>{
-      const c = document.createElement("div");
-      c.className = "gridcell";
+  function generateProblem(wantNoRemainder){
+    let divisor = rnd(2, settings.divisorMax);
+    let dividend;
+    if (wantNoRemainder){
+      const q = rnd(2, Math.max(2, Math.floor(settings.dividendMax/divisor)));
+      dividend = divisor*q;
+    }else{
+      dividend = rnd(2, settings.dividendMax);
+      if (dividend % divisor === 0) dividend += 1; // verzeker rest
+    }
+    return { dividend, divisor };
+  }
+
+  /* ---------- Raster helpers ---------- */
+  function clear(n){ n.innerHTML=''; }
+
+  function buildDividendGrid(node, dividend, useDecimals){
+    clear(node);
+    const str = String(dividend);
+    // Hoofdcijfers
+    for(const ch of str){
+      const c = document.createElement('div');
+      c.className = 'gridcell';
       c.textContent = ch;
-      g.appendChild(c);
-    });
-
-    // decimale uitbreiding
-    if(decimals){
-      // komma
-      const c = document.createElement("div");
-      c.className = "gridcell";
-      c.textContent = ",";
-      g.appendChild(c);
-
-      // drie nullen
-      for(let i=0;i<3;i++){
-        const z = document.createElement("div");
-        z.className = "gridcell gray";
-        z.textContent = "0";
-        g.appendChild(z);
+      node.appendChild(c);
+    }
+    // Eventueel komma + 3 nullen
+    if (useDecimals){
+      const comma = document.createElement('div');
+      comma.className = 'gridcell';
+      comma.textContent = ',';
+      node.appendChild(comma);
+      for (let i=0;i<3;i++){
+        const z = document.createElement('div');
+        z.className = 'gridcell gray';
+        z.textContent = '0';
+        node.appendChild(z);
       }
     }
+    // Geeft aantal kolommen visueel terug
+    return node.children.length;
   }
 
-  /* ---------- Deler-raster ---------- */
-  function makeDivisorGrid(divisor){
-    const g = $("#divGrid");
-    g.innerHTML = "";
-    String(divisor).split("").forEach(ch=>{
-      const c = document.createElement("div");
-      c.className = "gridcell";
+  function buildDivisorGrid(node, divisor){
+    clear(node);
+    for(const ch of String(divisor)){
+      const c = document.createElement('div');
+      c.className = 'gridcell';
       c.textContent = ch;
-      g.appendChild(c);
+      node.appendChild(c);
+    }
+  }
+
+  function buildQuotGrid(node, dividend, useDecimals){
+    clear(node);
+    const base = String(dividend).length;
+    const extra = useDecimals ? 3 : 0;
+    const total = base + extra;
+    for(let i=0;i<total;i++){
+      const c = document.createElement('div');
+      c.className = 'gridcell';
+      node.appendChild(c);
+    }
+    // horizontale bar precies even breed als het quotiënt-raster
+    const colWidth = parseInt(getComputedStyle(node).getPropertyValue('grid-auto-columns'));
+    $('#hbar').style.width = (total * colWidth) + 'px';
+  }
+
+  /* ---------- Plan: klassieke stappen (kolom-gericht) ---------- */
+  function planDivision(dividend, divisor, toDecimals){
+    const digs = String(dividend).split('').map(n=>+n);
+    const steps = [];
+    let idx=0, current=0;
+
+    // Integere deel
+    while(idx < digs.length){
+      current = current*10 + digs[idx];
+      const qd = Math.floor(current / divisor);
+      const prod = qd * divisor;
+      const rem  = current - prod;
+      steps.push({
+        digitIndex: idx,       // index van het *deeltal*-cijfer waarop deze stap eindigt
+        qDigit: qd,
+        part: current,
+        prod: prod,
+        rem:  rem,
+        bring: (idx+1<digs.length? digs[idx+1]: null),
+        isDec: false,
+        decIndex: null
+      });
+      idx++;
+      current = rem;
+    }
+
+    // Decimalen (max 3) als aangevinkt en rest != 0
+    if (toDecimals && current!==0){
+      for (let i=0;i<3;i++){
+        current *= 10;                 // laat "0" zakken
+        const qd = Math.floor(current / divisor);
+        const prod = qd * divisor;
+        const rem  = current - prod;
+        steps.push({
+          digitIndex: digs.length + i, // 0e,1e,2e decimaal *na* de integerlengte
+          qDigit: qd,
+          part: current,
+          prod: prod,
+          rem:  rem,
+          bring: (i<2?0:null),        // er komen tot 2 keer nog nullen
+          isDec: true,
+          decIndex: i+1
+        });
+        current = rem;
+        if (current===0) break;
+      }
+    }
+
+    return steps;
+  }
+
+  /* ---------- Werkgebied (klassiek): product & rest verschoven uitgelijnd ---------- */
+  function buildWorkArea(node, totalColsVisual, intLen, toDecimals, steps, divisor){
+    clear(node);
+    node.style.setProperty('--cols', totalColsVisual);
+
+    // helper om “digitIndex” → visuele kolom te mappen
+    const mapDigitIdxToCol = (di) => {
+      // Als decimaalmodus actief is, zit er een “komma”-cel na de laatste int.
+      // Visueel heeft de komma 1 kolom. Dus alle decimale indices schuiven +1 op.
+      if (!toDecimals) return di;
+      if (di < intLen) return di;
+      return di + 1; // sla de komma-kolom over
+    };
+
+    // Voor elke stap (maar sla de qDigit==0 met part<divisor over: daar schrijf je klassiek geen product)
+    steps.forEach((s) => {
+      const col = mapDigitIdxToCol(s.digitIndex);
+      const partStr = String(s.part);
+      const prodStr = String(s.prod);
+      const remStr  = String(s.rem);
+
+      // Als in deze stap current < divisor (qd=0) EN je “schreef” klassiek niets, sla product/rest over
+      if (s.qDigit === 0 && s.part < divisor){
+        // Toon enkel het 'laten zakken'-pijltje naar de volgende kolom (optioneel, cosmetisch)
+        if (s.bring !== null){
+          const rowArrow = document.createElement('div'); rowArrow.className='workRow';
+          for(let c=0;c<totalColsVisual;c++){
+            const wc=document.createElement('div'); wc.className='wcell';
+            if (c===col+1){ wc.textContent='↓'; wc.classList.add('arrow','light'); }
+            rowArrow.appendChild(wc);
+          }
+          node.appendChild(rowArrow);
+        }
+        return;
+      }
+
+      // PRODUCTRIJ (rechts uitgelijnd op kolom “col”)
+      const rowProd = document.createElement('div'); rowProd.className='workRow';
+      for (let c=0;c<totalColsVisual;c++){
+        const wc=document.createElement('div'); wc.className='wcell';
+        // Schrijf product rechts uitgelijnd t/m kolom ‘col’
+        const start = col - (prodStr.length - 1);
+        if (c>=start && c<=col){
+          const i = c - start; wc.textContent = prodStr[i];
+        }
+        rowProd.appendChild(wc);
+      }
+      node.appendChild(rowProd);
+
+      // RESTRIJ (met dikke lijn erboven, breedte ≈ lengte van ‘part’)
+      const rowRest = document.createElement('div'); rowRest.className='workRow';
+      const restStart = col - (partStr.length - 1); // subtractielijn onder het “deelbaar”-segment
+      for (let c=0;c<totalColsVisual;c++){
+        const wc=document.createElement('div'); wc.className='wcell';
+        if (c>=restStart && c<=col) wc.classList.add('topline'); // dikke streep erboven
+
+        // rest rechts uitgelijnd binnen dezelfde breedte
+        const remStart = col - (remStr.length - 1);
+        if (c>=remStart && c<=col){
+          const i = c - remStart; wc.textContent = remStr[i];
+        }
+        rowRest.appendChild(wc);
+      }
+      node.appendChild(rowRest);
+
+      // (optioneel) LAAT ZAKKEN pijltje onder de volgende kolom
+      if (s.bring !== null){
+        const rowBring = document.createElement('div'); rowBring.className='workRow';
+        for (let c=0;c<totalColsVisual;c++){
+          const wc=document.createElement('div'); wc.className='wcell light';
+          if (c===col+1){ wc.textContent='↓'; wc.classList.add('arrow'); }
+          rowBring.appendChild(wc);
+        }
+        node.appendChild(rowBring);
+      }
     });
   }
 
-  /* ---------- Quotiënt-raster ---------- */
-  function makeQuotGrid(dividend, decimals){
-    const q = $("#quotGrid");
-    q.innerHTML = "";
-
-    const base = String(dividend).length;
-    const extra = decimals ? 3 : 0;
-    const total = base + extra;
-
-    for(let i=0;i<total;i++){
-      const c = document.createElement("div");
-      c.className = "gridcell";
-      q.appendChild(c);
-    }
-
-    /* horizontale lijn automatisch op breedte */
-    const barWidth = total * parseInt(getComputedStyle(q).getPropertyValue("grid-auto-columns"));
-    $("#hbar").style.width = barWidth + "px";
-  }
-
-  /* ---------- Nieuwe oefening ---------- */
+  /* ---------- Alles samen ---------- */
   function newExercise(){
-    const dividend = rnd(2,9999);
-    const divisor = rnd(2,20);
-    const decimals = $("#toDecimals").checked;
+    const wantNoRemainder = (document.querySelector('input[name="rest"]:checked').value === 'zonder');
+    const useDecimals = document.getElementById('toDecimals').checked;
 
-    makeGrid(dividend, decimals);
-    makeDivisorGrid(divisor);
-    makeQuotGrid(dividend, decimals);
+    const { dividend, divisor } = generateProblem(wantNoRemainder);
+    const intLen = String(dividend).length;
+
+    // Links: deeltal
+    const totalColsVisual = buildDividendGrid(document.getElementById('grid'), dividend, useDecimals);
+
+    // Rechts: deler + quotiënt + bar
+    buildDivisorGrid(document.getElementById('divGrid'), divisor);
+    buildQuotGrid(document.getElementById('quotGrid'), dividend, useDecimals);
+
+    // Plan & werkgebied (klassieke verschuivingen)
+    const steps = planDivision(dividend, divisor, useDecimals);
+    buildWorkArea(document.getElementById('workArea'), totalColsVisual, intLen, useDecimals, steps, divisor);
   }
 
-  /* ---------- Listeners ---------- */
-  $("#btnNew").addEventListener("click", newExercise);
-  $("#toDecimals").addEventListener("change", newExercise);
+  /* ---------- Events ---------- */
+  document.getElementById('btnNew').addEventListener('click', newExercise);
+  document.getElementById('toDecimals').addEventListener('change', newExercise);
+  // (Check/Solution laten we voorlopig ongemoeid; volgt in een latere stap)
 
-  /* Eerste laadmoment */
+  // Init
   newExercise();
 
 })();
