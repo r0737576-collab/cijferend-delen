@@ -3,178 +3,183 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — stap 1 (deeltal + verticale lijn)</title>
-<meta name="description" content="Stap 1: Deeltal links als cellen (met optionele decimalen) en een verticale dikke lijn ernaast." />
+<title>Staartdeling — stap: deeltal + lijn + deler + horizontale balk</title>
 <style>
   :root{
-    --ink:#111; --muted:#667085; --grid:#e5e7eb; --accent:#1f6feb;
-    --paper:#ffffff; --chip:#f6f8fa;
-    --vline:5px;         /* dikte van de verticale lijn */
-    --cellW:2.2ch;       /* breedte van één cijfercel */
-    --cellPad:.24rem;    /* padding in de cel */
+    --ink:#000;
+    --grid:#d0d5dd;
+    --paper:#fff;
+    --vline:4px;
+    --bar:4px;
+    --cellW:2.2ch;
+    --cellPad:.22rem;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:#fafafa;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif}
-  header{padding:.9rem 1rem;border-bottom:1px solid var(--grid);background:#fff;position:sticky;top:0;z-index:10}
-  h1{margin:0;font-size:1.35rem}
-  .sub{margin:.2rem 0 0;color:var(--muted);font-size:.95rem}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto;
+    margin:0; background:#f7f7f7; color:#000;
+  }
+  header, .toolbar{background:#fff;border-bottom:1px solid var(--grid);padding:.8rem 1rem}
 
-  /* 🔸 Compacte instellingen (Niet aanpassen) */
-  .toolbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.7rem 1rem;border-bottom:1px solid var(--grid);background:#fff}
-  .group{display:flex;align-items:center;gap:.5rem;background:var(--chip);border:1px solid var(--grid);border-radius:.6rem;padding:.35rem .6rem}
-  .group label{display:flex;align-items:center;gap:.35rem;font-size:.95rem;white-space:nowrap}
-  .btns{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
-  button{border:1px solid var(--grid);background:#fff;border-radius:.55rem;padding:.45rem .7rem;cursor:pointer}
-  button:hover{border-color:var(--accent)}
+  /* --- compact houden zoals jij vroeg --- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+  .group{display:flex;gap:.4rem;align-items:center;background:#f2f4f7;
+         border:1px solid var(--grid);border-radius:.5rem;padding:.3rem .5rem}
+  button{padding:.4rem .7rem;border:1px solid var(--grid);border-radius:.5rem;background:#fff;cursor:pointer}
 
   main{padding:1rem}
-  .board{max-width:980px;margin:auto;background:var(--paper);border:1px solid var(--grid);border-radius:.9rem;padding:1rem}
+  .board{
+    background:var(--paper);border:1px solid var(--grid);
+    padding:1rem;border-radius:.8rem;max-width:900px;margin:auto;
+  }
 
-  /* 🔸 Hoofdlay‑out stap 1: [deeltal] | [verticale lijn] */
-  .head{
+  /* 🔥 DE BELANGRIJKE LAYOUT VAN DIT MOMENT 🔥 */
+
+  .layout{
     display:grid;
-    grid-template-columns: auto var(--vline);
-    column-gap:.75rem;
+    grid-template-columns:auto var(--vline) auto;
+    column-gap:.3rem;     /* << heel kleine afstand zoals jij vroeg */
     align-items:start;
-    min-height:140px; /* zorgt dat de lijn zichtbaar is, groeit mee met content */
   }
 
-  /* Deeltal als losse cellen */
-  .cells{display:flex;gap:.15rem;flex-wrap:wrap;align-items:flex-end}
+  /* Deeltal links */
+  .cells{display:flex;gap:.1rem;align-items:flex-end}
   .cell{
-    min-width:var(--cellW); text-align:center; padding:var(--cellPad);
-    border:1px solid var(--grid); border-radius:.3rem; font-weight:700; background:#fff;
+    min-width:var(--cellW);
+    padding:var(--cellPad);
+    text-align:center;
+    border:1px solid var(--grid);
+    border-radius:.3rem;
+    font-weight:700;
+    background:#fff;
   }
-  .cell.gray{background:#f2f4f7;color:#9aa0a6;border-color:#e6e9ef}
-  .comma{margin:0 .1rem .2rem; font-weight:700}
+  .comma{margin:0 .1rem;font-weight:700}
+  .gray{background:#e8eaef;color:#999}
 
   /* Dikke verticale lijn */
   .vline{
-    width:var(--vline); background:var(--ink);
-    align-self:stretch; justify-self:stretch; border-radius:2px;
+    width:var(--vline);
+    background:var(--ink);
+    min-height:140px;
+    border-radius:2px;
   }
 
-  /* (Overige secties worden later toegevoegd) */
-  @media print{
-    header,.toolbar,footer{display:none !important}
-    main{padding:0}
-    .board{border:none}
+  /* Rechterkant: deler en horizontale balk */
+  .right{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:.4rem;
+    padding-top:.2rem;
+  }
+  .divisorBox{
+    border:2px solid var(--ink);
+    padding:.25rem .6rem;
+    font-weight:700;
+    border-radius:.3rem;
+    background:#fff;
+  }
+  .hbar{
+    height:var(--bar);
+    width:120px;          /* voorlopig vaste waarde → straks dynamisch */
+    background:var(--ink);
+    border-radius:2px;
   }
 </style>
 </head>
 <body>
-  <header>
-    <h1>Staartdeling</h1>
-    <p class="sub">Stap 1: deeltal links + verticale dikke lijn. (Knoppen bovenaan niet aangepast.)</p>
-  </header>
 
-  <!-- 🔸 Instellingen (laten staan) -->
-  <div class="toolbar" aria-label="Instellingen">
-    <div class="group" role="radiogroup" aria-label="Oefeningstype">
-      <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
-      <label><input type="radio" name="rest" value="met"> met rest</label>
-    </div>
-    <div class="group">
-      <label><input type="checkbox" id="toDecimals"> tot <strong>0,001</strong></label>
-    </div>
-    <div class="group">
-      <label><input type="checkbox" id="enableCheck"> controle</label>
-    </div>
+<header>
+  <h1>Staartdeling</h1>
+</header>
 
-    <div class="btns">
-      <button id="btnNew" type="button">Nieuwe oefening</button>
-      <button id="btnCheck" type="button">Nakijken</button>
-      <button id="btnSolution" type="button">Oplossing</button>
-      <button id="btnReset" type="button">Wissen</button>
-    </div>
+<!-- 🟩 KNOPPEN NIET AANRAKEN -->
+<div class="toolbar">
+  <div class="group">
+    <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
+    <label><input type="radio" name="rest" value="met"> met rest</label>
   </div>
+  <div class="group"><label><input type="checkbox" id="toDecimals"> tot 0,001</label></div>
+  <div class="group"><label><input type="checkbox" id="enableCheck"> controle</label></div>
 
-  <main>
-    <section class="board" id="board" aria-label="Staartdeling">
-      <div class="head">
-        <!-- LINKS: deeltal als cellen -->
-        <div class="cells" id="cells"></div>
+  <button id="btnNew">Nieuwe oefening</button>
+  <button id="btnCheck">Nakijken</button>
+  <button id="btnSolution">Oplossing</button>
+  <button id="btnReset">Wissen</button>
+</div>
 
-        <!-- MIDDEN: dikke verticale lijn -->
-        <div class="vline"></div>
+<main>
+  <section class="board">
+    <div class="layout">
+
+      <!-- 🔹 Deeltal links -->
+      <div class="cells" id="cells"></div>
+
+      <!-- 🔹 Verticale lijn -->
+      <div class="vline"></div>
+
+      <!-- 🔹 Deler + horizontale balk -->
+      <div class="right">
+        <div class="divisorBox" id="divisor">23</div>
+        <div class="hbar" id="hbar"></div>
       </div>
-    </section>
-  </main>
 
-  <footer style="padding:1rem;color:#6b7280">
-    <small>Deze stap toont enkel het deeltal en de verticale lijn. Deler/quotient/stappen voegen we in de volgende stap toe.</small>
-  </footer>
+    </div>
+  </section>
+</main>
 
 <script>
-/* ===== JS stap 1: alleen deeltal + verticale lijn ===== */
 (function(){
-  const settings = { dividendMax: 10000, divisorMax: 20 };
-
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
 
-  const dom = {
-    rest: () => $$('input[name="rest"]').find(r=>r.checked).value,
-    toDecimals: () => $('#toDecimals').checked,
-    cells: () => $('#cells'),
-    btnNew: () => $('#btnNew'),
-    btnReset: () => $('#btnReset'),
-    btnCheck: () => $('#btnCheck'),
-    btnSolution: () => $('#btnSolution')
-  };
+  const settings = { dividendMax:9999, divisorMax:20 };
 
-  const rnd = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
-  // In latere stappen gebruiken we ook de deler. Nu genereren we enkel een passend deeltal.
-  function generateProblem({wantNoRemainder}){
-    // Voor deze stap maakt 'met/zonder rest' nog niets visueel uit; we genereren gewoon een deeltal.
-    const dividend = rnd(2, settings.dividendMax);
-    // Deler genereren we alvast (voor volgende stappen), maar tonen nog niet.
-    let divisor = rnd(2, settings.divisorMax);
-    if (!wantNoRemainder && dividend % divisor === 0) divisor += 1; // zorg dat het straks met rest kán zijn
-    return { dividend, divisor };
-  }
+  function buildCells(dividend,toDec){
+    const wrap = $("#cells");
+    wrap.innerHTML = "";
 
-  function clear(n){ n.innerHTML=''; }
-
-  // ⬅️ Deeltal als cellen, met optionele komma en 3 extra nullen
-  function buildCells(node, dividend, toDecimals){
-    clear(node);
-    String(dividend).split('').forEach(d=>{
-      const c=document.createElement('div'); c.className='cell'; c.textContent=d; node.appendChild(c);
+    // Cijfer per cel
+    String(dividend).split("").forEach(d=>{
+      const c = document.createElement("div");
+      c.className = "cell";
+      c.textContent = d;
+      wrap.appendChild(c);
     });
-    if (toDecimals){
-      const comma=document.createElement('div'); comma.className='comma'; comma.textContent=',';
-      node.appendChild(comma);
+
+    if(toDec){
+      const comma = document.createElement("div");
+      comma.className = "comma";
+      comma.textContent = ",";
+      wrap.appendChild(comma);
+
       for(let i=0;i<3;i++){
-        const z=document.createElement('div'); z.className='cell gray'; z.textContent='0'; node.appendChild(z);
+        const z = document.createElement("div");
+        z.className = "cell gray";
+        z.textContent = "0";
+        wrap.appendChild(z);
       }
     }
   }
 
-  // ===== App state & events =====
-  let current = null;
-
   function newExercise(){
-    const wantNoRemainder = (dom.rest()==='zonder');
-    const prob = generateProblem({ wantNoRemainder });
-    buildCells(dom.cells(), prob.dividend, dom.toDecimals());
-    current = prob;
+    const dividend = rnd(2, settings.dividendMax);
+    const divisor = rnd(2, settings.divisorMax);
+
+    buildCells(dividend, $("#toDecimals").checked);
+    $("#divisor").textContent = divisor;
   }
 
-  dom.btnNew().addEventListener('click', newExercise);
-  dom.btnReset().addEventListener('click', ()=>{ clear(dom.cells()); });
-  // De volgende twee knoppen doen in deze stap niets (blijven bestaan zoals gevraagd)
-  dom.btnCheck().addEventListener('click', ()=>{ /* stap 1: geen nakijklogica */ });
-  dom.btnSolution().addEventListener('click', ()=>{ /* stap 1: geen oplossing */ });
+  // knoppen reageren
+  $("#btnNew").addEventListener("click", newExercise);
+  $("#toDecimals").addEventListener("change", newExercise);
 
-  // Veranderingen in instellingen hertekenen het deeltal
-  $('#toDecimals').addEventListener('change', newExercise);
-  $$('input[name="rest"]').forEach(r=> r.addEventListener('change', newExercise));
-
-  // Init
+  // init
   newExercise();
 })();
 </script>
+
 </body>
 </html>
