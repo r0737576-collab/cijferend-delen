@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — klassieke bladstijl</title>
-<meta name="description" content="Staartdelingen in klassieke bladstijl: deeltal links, dikke verticale lijn, deler rechts met horizontale lijn, quotiënt onder de lijn, stappen en controle." />
+<title>Staartdeling — stap 1 (deeltal + verticale lijn)</title>
+<meta name="description" content="Stap 1: Deeltal links als cellen (met optionele decimalen) en een verticale dikke lijn ernaast." />
 <style>
   :root{
     --ink:#111; --muted:#667085; --grid:#e5e7eb; --accent:#1f6feb;
-    --ok:#15803d; --err:#b91c1c; --paper:#ffffff; --chip:#f6f8fa;
-    --vline:4px; --bar:4px; --cellW:2.1ch; --cellPad:.22rem;
+    --paper:#ffffff; --chip:#f6f8fa;
+    --vline:5px;         /* dikte van de verticale lijn */
+    --cellW:2.2ch;       /* breedte van één cijfercel */
+    --cellPad:.24rem;    /* padding in de cel */
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:#fafafa;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif}
@@ -17,7 +19,7 @@
   h1{margin:0;font-size:1.35rem}
   .sub{margin:.2rem 0 0;color:var(--muted);font-size:.95rem}
 
-  /* Compacte instellingen naast elkaar */
+  /* 🔸 Compacte instellingen (Niet aanpassen) */
   .toolbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.7rem 1rem;border-bottom:1px solid var(--grid);background:#fff}
   .group{display:flex;align-items:center;gap:.5rem;background:var(--chip);border:1px solid var(--grid);border-radius:.6rem;padding:.35rem .6rem}
   .group label{display:flex;align-items:center;gap:.35rem;font-size:.95rem;white-space:nowrap}
@@ -28,15 +30,16 @@
   main{padding:1rem}
   .board{max-width:980px;margin:auto;background:var(--paper);border:1px solid var(--grid);border-radius:.9rem;padding:1rem}
 
-  /* Hoofdopmaak: [deeltal] | [dikke verticale lijn] | [deler + bar + quotient] */
+  /* 🔸 Hoofdlay‑out stap 1: [deeltal] | [verticale lijn] */
   .head{
     display:grid;
-    grid-template-columns: 1fr var(--vline) 1fr;
+    grid-template-columns: auto var(--vline);
     column-gap:.75rem;
     align-items:start;
+    min-height:140px; /* zorgt dat de lijn zichtbaar is, groeit mee met content */
   }
 
-  /* LINKS: Deeltal als cellen */
+  /* Deeltal als losse cellen */
   .cells{display:flex;gap:.15rem;flex-wrap:wrap;align-items:flex-end}
   .cell{
     min-width:var(--cellW); text-align:center; padding:var(--cellPad);
@@ -45,58 +48,13 @@
   .cell.gray{background:#f2f4f7;color:#9aa0a6;border-color:#e6e9ef}
   .comma{margin:0 .1rem .2rem; font-weight:700}
 
-  /* MIDDEN: Dikke verticale lijn */
+  /* Dikke verticale lijn */
   .vline{
     width:var(--vline); background:var(--ink);
-    grid-row:1 / span 2;
-    justify-self:stretch; align-self:stretch;
+    align-self:stretch; justify-self:stretch; border-radius:2px;
   }
 
-  /* RECHTS: Deler (boven), dikke horizontale streep, quotiënt eronder */
-  .right{display:grid;grid-template-rows:auto auto auto;row-gap:.35rem;align-items:start}
-  .divisorTop{display:flex;align-items:center}
-  .divisorBox{
-    padding:.25rem .5rem; border:2px solid var(--ink); background:#fff; font-weight:700; border-radius:.3rem;
-    min-width:3.2rem; text-align:center;
-  }
-  .hbar{
-    height:var(--bar); background:var(--ink);
-    width: var(--quotW, 6rem); border-radius:2px;
-    transition: width .2s ease-out;
-  }
-
-  .quot{display:flex;gap:.15rem;flex-wrap:wrap;align-items:flex-end}
-  .qd{
-    min-width:var(--cellW); text-align:center; padding:var(--cellPad);
-    border:1px solid var(--grid); border-radius:.3rem; background:#fff;
-  }
-
-  /* STAPPEN: links onder het deeltal */
-  .steps{
-    grid-column:1 / 2; margin-top:.8rem;
-    display:grid; row-gap:.55rem;
-  }
-  .step{
-    display:grid; grid-template-columns:auto 1fr; column-gap:.6rem; align-items:center;
-  }
-  .s-nr{color:#475569; min-width:5.2rem}
-  .s-work{display:grid; row-gap:.25rem}
-  .row{display:flex; align-items:center; gap:.4rem; flex-wrap:wrap}
-  .num{
-    width:10ch; text-align:right; padding:.28rem .4rem; border:1px solid var(--grid); border-radius:.35rem; background:#fff;
-  }
-  .ok{background:#e8f5ea !important; border-color:#16a34a !important}
-  .err{background:#fee2e2 !important; border-color:#b91c1c !important}
-  .hint{color:#667085; font-size:.92rem}
-
-  /* Controle */
-  details{margin-top:1rem}
-  .check{border:1px solid var(--grid);border-radius:.6rem;padding:.75rem;background:#fff;max-width:980px}
-  .check .row{display:grid;grid-template-columns:auto 1fr auto auto auto 1fr;gap:.35rem;align-items:center}
-  .check .has-rest{grid-template-columns:auto 1fr auto 1fr}
-  .check input{width:12ch;text-align:right;border:1px solid var(--grid);border-radius:.35rem;padding:.28rem .4rem;background:#fff}
-  summary{cursor:pointer}
-
+  /* (Overige secties worden later toegevoegd) */
   @media print{
     header,.toolbar,footer{display:none !important}
     main{padding:0}
@@ -107,10 +65,10 @@
 <body>
   <header>
     <h1>Staartdeling</h1>
-    <p class="sub">Klassieke bladstijl: <strong>deeltal links</strong> → <strong>dikke verticale lijn</strong> → <strong>deler rechts</strong> met <strong>horizontale lijn</strong>, quotiënt eronder.</p>
+    <p class="sub">Stap 1: deeltal links + verticale dikke lijn. (Knoppen bovenaan niet aangepast.)</p>
   </header>
 
-  <!-- Instellingen (compact, naast elkaar) -->
+  <!-- 🔸 Instellingen (laten staan) -->
   <div class="toolbar" aria-label="Instellingen">
     <div class="group" role="radiogroup" aria-label="Oefeningstype">
       <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
@@ -139,30 +97,16 @@
 
         <!-- MIDDEN: dikke verticale lijn -->
         <div class="vline"></div>
-
-        <!-- RECHTS: deler boven, horizontale bar, quotient eronder -->
-        <div class="right">
-          <div class="divisorTop"><div class="divisorBox" id="divisor">—</div></div>
-          <div class="hbar" id="hbar"></div>
-          <div class="quot" id="quot"></div>
-        </div>
-
-        <!-- STAPPEN: links onder het deeltal -->
-        <div class="steps" id="steps"></div>
       </div>
-
-      <details id="checkDetails">
-        <summary>Controle‑rooster</summary>
-        <div class="check" id="checkHost"></div>
-      </details>
     </section>
   </main>
 
   <footer style="padding:1rem;color:#6b7280">
-    <small>Tip: hover op een rode cel voor de uitleg (foutoorzaak).</small>
+    <small>Deze stap toont enkel het deeltal en de verticale lijn. Deler/quotient/stappen voegen we in de volgende stap toe.</small>
   </footer>
 
 <script>
+/* ===== JS stap 1: alleen deeltal + verticale lijn ===== */
 (function(){
   const settings = { dividendMax: 10000, divisorMax: 20 };
 
@@ -172,76 +116,28 @@
   const dom = {
     rest: () => $$('input[name="rest"]').find(r=>r.checked).value,
     toDecimals: () => $('#toDecimals').checked,
-    enableCheck: () => $('#enableCheck').checked,
     cells: () => $('#cells'),
-    quot: () => $('#quot'),
-    hbar: () => $('#hbar'),
-    divisor: () => $('#divisor'),
-    steps: () => $('#steps'),
-    checkDetails: () => $('#checkDetails'),
-    checkHost: () => $('#checkHost'),
     btnNew: () => $('#btnNew'),
-    btnCheck: () => $('#btnCheck'),
-    btnSolution: () => $('#btnSolution'),
     btnReset: () => $('#btnReset'),
+    btnCheck: () => $('#btnCheck'),
+    btnSolution: () => $('#btnSolution')
   };
 
   const rnd = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
 
-  function generateProblem({wantNoRemainder, toDecimals}){
+  // In latere stappen gebruiken we ook de deler. Nu genereren we enkel een passend deeltal.
+  function generateProblem({wantNoRemainder}){
+    // Voor deze stap maakt 'met/zonder rest' nog niets visueel uit; we genereren gewoon een deeltal.
+    const dividend = rnd(2, settings.dividendMax);
+    // Deler genereren we alvast (voor volgende stappen), maar tonen nog niet.
     let divisor = rnd(2, settings.divisorMax);
-    let dividend;
-    if (wantNoRemainder){
-      const q = rnd(2, Math.max(2, Math.floor(settings.dividendMax / divisor)));
-      dividend = divisor * q;
-    } else {
-      dividend = rnd(2, settings.dividendMax);
-      if (dividend % divisor === 0) dividend += 1;
-    }
-    return { dividend, divisor, toDecimals };
-  }
-
-  function planDivision({dividend, divisor, toDecimals}){
-    const digs = String(dividend).split('').map(n=>+n);
-    const steps = [];
-    let idx=0, curr=0;
-    let qDigits=[];
-    while(idx<digs.length){
-      curr = curr*10 + digs[idx];
-      const qd = Math.floor(curr/divisor);
-      const prod = qd*divisor;
-      const rem = curr - prod;
-      steps.push({ step:idx+1, part: curr, qDigit: qd, prod, rem, bring: digs[idx+1] ?? null });
-      qDigits.push(qd);
-      curr = rem;
-      idx++;
-    }
-    // trim leading zeros in quotient
-    while(qDigits.length>1 && qDigits[0]===0){ qDigits.shift(); steps.shift(); }
-    let remainder = curr;
-
-    // Optional decimals (max. 3) als nog rest
-    let decDigits=[];
-    if (toDecimals && remainder!==0){
-      let c=remainder;
-      for(let i=0;i<3;i++){
-        c*=10;
-        const qd=Math.floor(c/divisor), prod=qd*divisor, rem=c-prod;
-        steps.push({ step:steps.length+1, part:c, qDigit:qd, prod, rem, bring:(i<2?0:null), isDec:true, decIndex:i+1 });
-        decDigits.push(qd);
-        c=rem;
-        if (c===0) break;
-      }
-      remainder=c;
-    }
-
-    const qStr = (qDigits.length? qDigits.join('') : '0') + (decDigits.length? ','+decDigits.join(''):'');
-    return { steps, qDigits, decDigits, remainder, qStr };
+    if (!wantNoRemainder && dividend % divisor === 0) divisor += 1; // zorg dat het straks met rest kán zijn
+    return { dividend, divisor };
   }
 
   function clear(n){ n.innerHTML=''; }
 
-  /* LINKS: deeltal als cellen (en evt. extra nullen) */
+  // ⬅️ Deeltal als cellen, met optionele komma en 3 extra nullen
   function buildCells(node, dividend, toDecimals){
     clear(node);
     String(dividend).split('').forEach(d=>{
@@ -256,209 +152,24 @@
     }
   }
 
-  /* RECHTS: quotiënt onder de horizontale dikke lijn */
-  function buildQuotientAndBar(quotNode, barNode, plan){
-    clear(quotNode);
-    const makeQ = (exp) => {
-      const i=document.createElement('input');
-      i.type='text'; i.maxLength=1; i.inputMode='numeric'; i.className='qd';
-      i.setAttribute('data-exp', exp); i.placeholder='·';
-      return i;
-    };
-    // quotiënt-vakjes
-    plan.qDigits.forEach(d=> quotNode.appendChild(makeQ(d)));
-    if (plan.decDigits.length){
-      const comma=document.createElement('span'); comma.textContent=','; comma.style.margin='0 .1rem';
-      quotNode.appendChild(comma);
-      plan.decDigits.forEach(d=> quotNode.appendChild(makeQ(d)));
-    }
-    // horizontale balk lengte = #quotiënt-vakjes
-    const qCount = plan.qDigits.length + plan.decDigits.length;
-    const est = `calc(${qCount} * (2.1ch + .30rem))`; // vakbreedte + marge
-    barNode.style.setProperty('width', est);
-  }
-
-  /* STAPPEN: simpel gehouden (product/rest/laat zakken) */
-  function buildSteps(node, divisor, plan){
-    clear(node);
-    plan.steps.forEach((s,i)=>{
-      const step=document.createElement('div'); step.className='step';
-      const nr=document.createElement('div'); nr.className='s-nr';
-      nr.textContent = s.isDec? `Stap ${i+1} (decimaal ${s.decIndex})` : `Stap ${i+1}`;
-      const work=document.createElement('div'); work.className='s-work';
-
-      // product
-      const r1=document.createElement('div'); r1.className='row';
-      const lab1=document.createElement('span'); lab1.textContent='product:';
-      const q=document.createElement('input'); q.className='num q'; q.placeholder='q'; q.setAttribute('data-exp', s.qDigit);
-      const times=document.createElement('span'); times.textContent='×';
-      const d=document.createElement('span'); d.textContent=String(divisor);
-      const eq=document.createElement('span'); eq.textContent='=';
-      const p=document.createElement('input'); p.className='num prod'; p.placeholder='q×d'; p.setAttribute('data-exp', s.prod);
-      r1.append(lab1,q,times,d,eq,p);
-
-      // rest
-      const r2=document.createElement('div'); r2.className='row';
-      const lab2=document.createElement('span'); lab2.textContent='rest:';
-      const rem=document.createElement('input'); rem.className='num rem'; rem.placeholder='rest'; rem.setAttribute('data-exp', s.rem);
-      const hint=document.createElement('span'); hint.className='hint'; hint.textContent=`${s.part} − (${divisor}×q) = rest`;
-      r2.append(lab2,rem,hint);
-
-      // laat zakken
-      const r3=document.createElement('div'); r3.className='row';
-      const lab3=document.createElement('span'); lab3.textContent='laat zakken:';
-      const b=document.createElement('span'); b.textContent = (s.bring===null)? '—' : String(s.bring);
-      r3.append(lab3,b);
-
-      work.append(r1,r2,r3);
-      step.append(nr,work);
-      node.append(step);
-    });
-  }
-
-  function buildCheckUI(host, problem, plan){
-    clear(host);
-    const row1=document.createElement('div'); row1.className='row';
-    const labQ=document.createElement('span'); labQ.textContent='quotiënt:';
-    const qIn=document.createElement('input'); qIn.className='q-input'; qIn.placeholder='quotiënt';
-    const times=document.createElement('span'); times.textContent='×';
-    const d=document.createElement('span'); d.textContent=String(problem.divisor);
-    const eq=document.createElement('span'); eq.textContent='=';
-    const prodIn=document.createElement('input'); prodIn.className='prod-input'; prodIn.placeholder='product';
-    row1.append(labQ,qIn,times,d,eq,prodIn);
-    host.append(row1);
-
-    if (plan.remainder!==0){
-      const row2=document.createElement('div'); row2.className='row has-rest';
-      const plusRest=document.createElement('span'); plusRest.textContent='+ rest:';
-      const rIn=document.createElement('input'); rIn.className='r-input'; rIn.placeholder='rest';
-      const eq2=document.createElement('span'); eq2.textContent='=';
-      const sumIn=document.createElement('input'); sumIn.className='sum-input'; sumIn.placeholder='deeltal';
-      row2.append(plusRest,rIn,eq2,sumIn);
-      host.append(row2);
-    }
-    const hint=document.createElement('p'); hint.className='hint';
-    hint.textContent='Controle: quotiënt × deler = product; product + rest = deeltal.';
-    host.append(hint);
-  }
-
-  function annotate(inp, ok, msg){
-    inp.classList.remove('ok','err'); inp.removeAttribute('title');
-    if (ok===true){ inp.classList.add('ok'); }
-    if (ok===false){ inp.classList.add('err'); inp.title = msg || 'Fout'; }
-  }
-
-  function validate(current){
-    // quotiënt-cellen (onder de horizontale lijn rechts)
-    $$('#quot .qd').forEach(inp=>{
-      const exp = String(inp.dataset.exp);
-      const got = (inp.value||'').trim();
-      if (got==='') { annotate(inp,null); return; }
-      annotate(inp, got===exp, got===exp?'':'Quotiënt‑cijfer klopt niet.');
-    });
-
-    // stappen links
-    $$('#steps .step').forEach(step=>{
-      const q = step.querySelector('.q');
-      const prod = step.querySelector('.prod');
-      const rem = step.querySelector('.rem');
-      const d = +current.divisor;
-
-      if (q && q.value.trim()!==''){
-        const okQ = +q.value === +q.dataset.exp;
-        annotate(q, okQ, `Kies het grootste q zodat ${d}×q ≤ deelbaar.`);
-      }
-      if (prod && prod.value.trim()!==''){
-        const okP = +prod.value === +prod.dataset.exp;
-        const expQ = +q.dataset.exp;
-        annotate(prod, okP, okP?'':`Product fout: ${expQ}×${d} = ${prod.dataset.exp}.`);
-      }
-      if (rem && rem.value.trim()!==''){
-        const okR = +rem.value === +rem.dataset.exp;
-        annotate(rem, okR, okR?'':`Rest fout: deelbaar − (d×q) = ${rem.dataset.exp}.`);
-      }
-    });
-  }
-
-  function fillSolution(){
-    $$('#quot .qd').forEach(inp=> inp.value = inp.dataset.exp);
-    $$('#steps .step').forEach(step=>{
-      const q = step.querySelector('.q'), p=step.querySelector('.prod'), r=step.querySelector('.rem');
-      if (q) q.value = q.dataset.exp; if (p) p.value = p.dataset.exp; if (r) r.value = r.dataset.exp;
-    });
-  }
-
-  function validateCheck(host, problem, plan){
-    const qI = host.querySelector('.q-input');
-    const pI = host.querySelector('.prod-input');
-    const rI = host.querySelector('.r-input');
-    const sI = host.querySelector('.sum-input');
-
-    const qVal = Number(String(plan.qStr).replace(',','.'));
-    const targetProd = Math.floor(qVal * problem.divisor);
-
-    if (qI && qI.value.trim()!==''){
-      const ok = Number(String(qI.value).replace(',','.')) === qVal;
-      annotate(qI, ok, ok?'':`Quotiënt = ${plan.qStr}`);
-    }
-    if (pI && pI.value.trim()!==''){
-      annotate(pI, +pI.value===targetProd, `Product = ${targetProd}`);
-    }
-    if (rI){
-      if (plan.remainder===0){
-        if (sI && sI.value.trim()!==''){
-          annotate(sI, +sI.value===problem.dividend, 'Bij uitkomst: product = deeltal');
-        }
-      } else {
-        if (rI.value.trim()!==''){
-          annotate(rI, +rI.value===plan.remainder, `Rest = ${plan.remainder}`);
-        }
-        if (sI && sI.value.trim()!==''){
-          annotate(sI, +sI.value===problem.dividend, `Product + rest = ${problem.dividend}`);
-        }
-      }
-    }
-  }
-
-  // App state
-  let currentProblem=null, currentPlan=null;
+  // ===== App state & events =====
+  let current = null;
 
   function newExercise(){
     const wantNoRemainder = (dom.rest()==='zonder');
-    const prob = generateProblem({ wantNoRemainder, toDecimals: dom.toDecimals() });
-    const plan = planDivision(prob);
-
-    // LINKS (deeltal)
-    buildCells(dom.cells(), prob.dividend, prob.toDecimals);
-
-    // RECHTS (deler, bar, quotiënt)
-    dom.divisor().textContent = String(prob.divisor);
-    buildQuotientAndBar(dom.quot(), dom.hbar(), plan);
-
-    // STAPPEN
-    buildSteps(dom.steps(), prob.divisor, plan);
-
-    // Controle
-    buildCheckUI(dom.checkHost(), prob, plan);
-    dom.checkDetails().open = dom.enableCheck();
-
-    currentProblem = prob; currentPlan = plan;
+    const prob = generateProblem({ wantNoRemainder });
+    buildCells(dom.cells(), prob.dividend, dom.toDecimals());
+    current = prob;
   }
 
-  // Events
   dom.btnNew().addEventListener('click', newExercise);
-  dom.btnReset().addEventListener('click', ()=>{
-    [dom.cells(), dom.quot(), dom.steps(), dom.checkHost()].forEach(n=> n.innerHTML='');
-    dom.divisor().textContent='—'; dom.hbar().style.removeProperty('width');
-  });
-  dom.btnSolution().addEventListener('click', ()=>{ if (!currentPlan) return; fillSolution(); validate(currentProblem); });
-  dom.btnCheck().addEventListener('click', ()=>{
-    if (!currentPlan) return;
-    validate(currentProblem);
-    validateCheck(dom.checkHost(), currentProblem, currentPlan);
-  });
-  document.getElementById('enableCheck').addEventListener('change', ()=> dom.checkDetails().open = dom.enableCheck());
-  document.getElementById('toDecimals').addEventListener('change', newExercise);
+  dom.btnReset().addEventListener('click', ()=>{ clear(dom.cells()); });
+  // De volgende twee knoppen doen in deze stap niets (blijven bestaan zoals gevraagd)
+  dom.btnCheck().addEventListener('click', ()=>{ /* stap 1: geen nakijklogica */ });
+  dom.btnSolution().addEventListener('click', ()=>{ /* stap 1: geen oplossing */ });
+
+  // Veranderingen in instellingen hertekenen het deeltal
+  $('#toDecimals').addEventListener('change', newExercise);
   $$('input[name="rest"]').forEach(r=> r.addEventListener('change', newExercise));
 
   // Init
