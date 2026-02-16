@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — komma-cellen smaller wanneer actief</title>
+<title>Staartdeling — quotient max. 3 decimalen</title>
 
 <style>
 :root{
   --ink:#000;
   --grid:#c8c8c8;
   --cell:38px;      /* standaard celbreedte */
-  --commaW:10px;    /* smalle komma-kolom */
+  --commaW:10px;    /* smalle komma-kolom wanneer actief */
   --vline:4px;
   --bar:4px;
   --accent:#1f6feb;
@@ -79,7 +79,7 @@ main{ padding:1rem; }
   <h1>Staartdeling</h1>
 </header>
 
-<!-- Knoppen (ongewijzigd) -->
+<!-- Knoppen (laten staan zoals afgesproken) -->
 <div class="toolbar">
   <div class="group">
     <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
@@ -125,13 +125,12 @@ main{ padding:1rem; }
 
   const settings = { dividendMax: 10000, divisorMax: 20 };
 
-  /* ===== helpers ===== */
+  /* ===== Helpers ===== */
   const buildColumns = (count, commaIdx = -1) =>
     new Array(count).fill(0).map((_,i)=> i===commaIdx ? 'var(--commaW)' : 'var(--cell)').join(' ');
-
   function clear(n){ n.innerHTML=''; }
 
-  /* ===== opgave ===== */
+  /* ===== Opgave ===== */
   function generateProblem(wantNoRemainder){
     let divisor = rnd(2, settings.divisorMax);
     let dividend;
@@ -145,14 +144,14 @@ main{ padding:1rem; }
     return { dividend, divisor };
   }
 
-  /* ===== links: deeltal (met smalle komma-kolom als dec aan staat) ===== */
+  /* ===== Links: deeltal (met smalle komma-kolom als dec aan staat) ===== */
   function buildDividendGrid(node, dividend, useDecimals){
     clear(node);
     const s = String(dividend);
     const intLen = s.length;
     const totalCols = intLen + (useDecimals ? 1+3 : 0);
 
-    // komma op index = intLen (smal), rest normale cellen
+    // smalle komma-kolom op index intLen wanneer decimaalmodus actief
     node.style.gridTemplateColumns = buildColumns(totalCols, useDecimals ? intLen : -1);
 
     for (const ch of s){ const c=document.createElement('div'); c.className='gridcell'; c.textContent=ch; node.appendChild(c); }
@@ -160,10 +159,10 @@ main{ padding:1rem; }
       const comma=document.createElement('div'); comma.className='gridcell'; comma.textContent=','; node.appendChild(comma);
       for (let i=0;i<3;i++){ const z=document.createElement('div'); z.className='gridcell gray'; z.textContent='0'; node.appendChild(z); }
     }
-    return { intLen, totalCols };
+    return { intLen, totalCols, commaIndex: useDecimals ? intLen : -1 };
   }
 
-  /* ===== rechts: deler ===== */
+  /* ===== Rechts: deler ===== */
   function buildDivisorGrid(node, divisor){
     clear(node);
     const s = String(divisor);
@@ -171,12 +170,19 @@ main{ padding:1rem; }
     for (const ch of s){ const c=document.createElement('div'); c.className='gridcell'; c.textContent=ch; node.appendChild(c); }
   }
 
-  /* ===== rechts: quotient (vaste celbreedte voor digits; smalle kolom precies waar de komma staat) ===== */
-  let qState = { cols: 0, commaIdx: -1, base: 0, maxExtraDec: 0 };
+  /* ===== Rechts: quotient =====
+     - vaste celbreedte (Excel-look)
+     - initieel: #cellen = intLen (aantal cijfers van deeltal)
+     - komma kan in ELK vakje; de komma-kolom wordt smal
+     - na komma: +1 decimaalvak
+     - vervolgens groeit telkens nog 1 vakje wanneer het laatste decimaalvakje gevuld is
+     - MAXIMAAL 3 decimaalvakken (ongeacht “tot 0,001”)
+  */
+  let qState = { cols: 0, base: 0, commaIdx: -1, maxExtraDec: 3 };
 
-  function buildQuotGrid(node, intLen, allowDecimals){
+  function buildQuotGrid(node, intLen){
     clear(node);
-    qState = { cols: intLen, commaIdx: -1, base: intLen, maxExtraDec: allowDecimals ? 3 : 0 };
+    qState = { cols: intLen, base: intLen, commaIdx: -1, maxExtraDec: 3 };
     node.dataset.intlen = String(intLen);
 
     node.style.gridTemplateColumns = buildColumns(qState.cols, qState.commaIdx);
@@ -192,13 +198,12 @@ main{ padding:1rem; }
 
     c.addEventListener('input', ()=>{
       let t = (c.textContent || '').trim();
+      const grid = $('#quotGrid');
 
-      // komma (of punt) → dit vakje wordt de komma-kolom
+      // Komma (of punt) → normaliseer en maak deze kolom de smalle komma-kolom
       if (/[.,]/.test(t)){
         c.textContent = ','; // normaliseer
-        const grid = $('#quotGrid');
-
-        // verwijder eventuele oude komma
+        // verwijder bestaande komma elders
         if (qState.commaIdx !== -1 && qState.commaIdx !== idx){
           const old = grid.children[qState.commaIdx];
           if (old) old.textContent = '';
@@ -206,25 +211,25 @@ main{ padding:1rem; }
         qState.commaIdx = idx;
         grid.style.gridTemplateColumns = buildColumns(qState.cols, qState.commaIdx);
 
-        // zorg dat er minstens 1 extra kolom komt (als toegestaan)
+        // na eerste komma: minimaal 1 decimaalvak (als er nog geen extra is)
         ensureOneExtraAfterComma();
 
         syncHBar();
         return;
       }
 
-      // anders: enkel laatste cijfer
+      // Anders: enkel laatste cijfer bewaren
       t = t.replace(/\D+/g,'');
       if (t.length>1) t = t.slice(-1);
       c.textContent = t;
 
-      // als dit de komma-kolom wás maar nu geen komma meer bevat → komma weg en alle extra decimalen weg
+      // indien dit de komma-kolom wás maar nu geen komma meer bevat → komma weg en alle extra decimalen verwijderen
       if (qState.commaIdx === idx && c.textContent !== ','){
         qState.commaIdx = -1;
         trimToBase();
       }
 
-      // als er een komma is: groei extra kolommen wanneer het laatste vakje gevuld raakt
+      // als er een komma is: eventueel uitbreiden tot max. 3 decimalen
       if (qState.commaIdx !== -1){ growDecimalsIfNeeded(); }
 
       syncHBar();
@@ -234,24 +239,24 @@ main{ padding:1rem; }
   }
 
   function ensureOneExtraAfterComma(){
-    if (qState.maxExtraDec === 0) return;
-    const haveExtra = qState.cols - qState.base;
-    if (haveExtra < 1){ addQuotColumn(); }
+    const extra = qState.cols - qState.base;
+    if (extra < 1 && qState.maxExtraDec > 0) addQuotColumn();
   }
 
   function growDecimalsIfNeeded(){
     const grid = $('#quotGrid');
-    const haveExtra = qState.cols - qState.base;
-    const maxExtra = 1 + qState.maxExtraDec; // minimaal 1 na comma + tot 3 extra als toegestaan
-    if (haveExtra >= maxExtra) return;
-
+    const extra = qState.cols - qState.base;
+    if (extra >= qState.maxExtraDec) return;   // MAX = 3
     const last = grid.children[grid.children.length - 1];
+    if (!last) return;
     const filled = (last.textContent || '').trim() !== '';
-    if (filled){ addQuotColumn(); }
+    if (filled) addQuotColumn();
   }
 
   function addQuotColumn(){
     const grid = $('#quotGrid');
+    const extra = qState.cols - qState.base;
+    if (extra >= qState.maxExtraDec) return;   // respecteer limiet (3)
     qState.cols += 1;
     grid.style.gridTemplateColumns = buildColumns(qState.cols, qState.commaIdx);
     grid.appendChild(makeQuotCell(qState.cols - 1));
@@ -271,7 +276,7 @@ main{ padding:1rem; }
   }
   function syncHBar(){ $('#hbar').style.width = $('#quotGrid').getBoundingClientRect().width + 'px'; }
 
-  /* ===== werkveld: zelfde kolomopbouw als links; komma-kolom smal als dec aan staan ===== */
+  /* ===== Werkveld (links): kolommen volgen links; komma-kolom smal als “tot 0,001” aanstaat ===== */
   function baseRowRule(dividend, divisor){
     const s = String(dividend);
     const n = s.length;
@@ -293,7 +298,7 @@ main{ padding:1rem; }
         cell.className = 'wcell';
         cell.setAttribute('contenteditable','true');
 
-        // Alleen product-rijen (even r) → rest-rij eronder krijgt topline onder gebruikte productkolommen
+        // Alleen product-rijen (even r) → rest-rij eronder krijgt topline onder de gebruikte productkolommen
         cell.addEventListener('input', ()=> handleRowInput(node, row));
         cell.addEventListener('blur',  ()=> handleRowInput(node, row));
 
@@ -322,7 +327,7 @@ main{ padding:1rem; }
     for (let i=first;i<=last;i++){ if (restCells[i]) restCells[i].classList.add('topline'); }
   }
 
-  /* ===== samenstellen ===== */
+  /* ===== Samenstellen ===== */
   let current = { dividend:0, divisor:0 };
 
   function newExercise(){
@@ -332,27 +337,26 @@ main{ padding:1rem; }
     current = generateProblem(wantNoRemainder);
 
     // Links
-    const { intLen, totalCols } = buildDividendGrid($('#grid'), current.dividend, useDecimals);
+    const { intLen, totalCols, commaIndex } = buildDividendGrid($('#grid'), current.dividend, useDecimals);
 
     // Rechts
     buildDivisorGrid($('#divGrid'), current.divisor);
-    const qNode = $('#quotGrid');
-    qNode.dataset.intlen = String(intLen);
-    buildQuotGrid(qNode, intLen, useDecimals);
+    buildQuotGrid($('#quotGrid'), intLen);
 
-    // Werkveld (komma-kolom links is op index = intLen)
-    buildWorkArea($('#workArea'), current.dividend, current.divisor, useDecimals, totalCols, useDecimals ? intLen : -1);
+    // Werkveld (kolommen volgen links)
+    buildWorkArea($('#workArea'), current.dividend, current.divisor, useDecimals, totalCols, commaIndex);
 
     setTimeout(syncHBar, 0);
   }
 
-  /* ===== events ===== */
+  /* ===== Events ===== */
   $('#btnNew').addEventListener('click', newExercise);
   $('#toDecimals').addEventListener('change', newExercise);
+
   $('#btnReset').addEventListener('click', ()=>{
     document.querySelectorAll('#workArea .wcell').forEach(c=>{ c.textContent=''; c.classList.remove('topline'); });
     const q = $('#quotGrid'); const intLen = parseInt(q.dataset.intlen,10) || 1;
-    buildQuotGrid(q, intLen, document.getElementById('toDecimals').checked);
+    buildQuotGrid(q, intLen); // reset quotient naar basis; max 3 decimalen blijft actief bij nieuwe komma
   });
 
   newExercise();
