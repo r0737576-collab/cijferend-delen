@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — bladstijl (klassiek haakje)</title>
-<meta name="description" content="Staartdelingen in bladstijl: deeltal als cellen, dikke verticale lijn, deler rechts met horizontale dikke lijn, stappen en controle." />
+<title>Staartdeling — klassieke bladstijl</title>
+<meta name="description" content="Staartdelingen in klassieke bladstijl: deeltal links, dikke verticale lijn, deler rechts met horizontale lijn, quotiënt onder de lijn, stappen en controle." />
 <style>
   :root{
     --ink:#111; --muted:#667085; --grid:#e5e7eb; --accent:#1f6feb;
@@ -28,16 +28,15 @@
   main{padding:1rem}
   .board{max-width:980px;margin:auto;background:var(--paper);border:1px solid var(--grid);border-radius:.9rem;padding:1rem}
 
-  /* Kop in drie kolommen: [deeltal-cellen] | [dikke verticale lijn] | [deler + bar + quotient] */
+  /* Hoofdopmaak: [deeltal] | [dikke verticale lijn] | [deler + bar + quotient] */
   .head{
     display:grid;
     grid-template-columns: 1fr var(--vline) 1fr;
     column-gap:.75rem;
-    align-items:end;
-    position:relative;
+    align-items:start;
   }
 
-  /* Deeltal als cellen */
+  /* LINKS: Deeltal als cellen */
   .cells{display:flex;gap:.15rem;flex-wrap:wrap;align-items:flex-end}
   .cell{
     min-width:var(--cellW); text-align:center; padding:var(--cellPad);
@@ -46,38 +45,33 @@
   .cell.gray{background:#f2f4f7;color:#9aa0a6;border-color:#e6e9ef}
   .comma{margin:0 .1rem .2rem; font-weight:700}
 
-  /* Dikke verticale lijn (haakje) */
+  /* MIDDEN: Dikke verticale lijn */
   .vline{
     width:var(--vline); background:var(--ink);
-    grid-row:1 / span 2; /* doorloopt head en steps */
+    grid-row:1 / span 2;
     justify-self:stretch; align-self:stretch;
   }
 
-  /* Rechterkop: quotiënt (boven), daaronder deler + dikke horizontale bar */
-  .right{display:grid;grid-template-rows:auto auto;row-gap:.35rem}
+  /* RECHTS: Deler (boven), dikke horizontale streep, quotiënt eronder */
+  .right{display:grid;grid-template-rows:auto auto auto;row-gap:.35rem;align-items:start}
+  .divisorTop{display:flex;align-items:center}
+  .divisorBox{
+    padding:.25rem .5rem; border:2px solid var(--ink); background:#fff; font-weight:700; border-radius:.3rem;
+    min-width:3.2rem; text-align:center;
+  }
+  .hbar{
+    height:var(--bar); background:var(--ink);
+    width: var(--quotW, 6rem); border-radius:2px;
+    transition: width .2s ease-out;
+  }
+
   .quot{display:flex;gap:.15rem;flex-wrap:wrap;align-items:flex-end}
   .qd{
     min-width:var(--cellW); text-align:center; padding:var(--cellPad);
     border:1px solid var(--grid); border-radius:.3rem; background:#fff;
   }
 
-  .divisorBar{
-    display:grid;
-    grid-template-columns:auto 1fr;
-    align-items:end; column-gap:.5rem;
-  }
-  .divisorBox{
-    padding:.25rem .5rem; border:2px solid var(--ink); background:#fff; font-weight:700; border-radius:.3rem;
-    min-width:3.2rem; text-align:center;
-  }
-  .barWrap{display:flex; align-items:center}
-  .bar{
-    height:var(--bar); background:var(--ink);
-    width: var(--quotW, 6rem); border-radius:2px;
-    transition: width .2s ease-out;
-  }
-
-  /* Stappen links onder de cells (aantal rijen = dynamisch) */
+  /* STAPPEN: links onder het deeltal */
   .steps{
     grid-column:1 / 2; margin-top:.8rem;
     display:grid; row-gap:.55rem;
@@ -95,6 +89,7 @@
   .err{background:#fee2e2 !important; border-color:#b91c1c !important}
   .hint{color:#667085; font-size:.92rem}
 
+  /* Controle */
   details{margin-top:1rem}
   .check{border:1px solid var(--grid);border-radius:.6rem;padding:.75rem;background:#fff;max-width:980px}
   .check .row{display:grid;grid-template-columns:auto 1fr auto auto auto 1fr;gap:.35rem;align-items:center}
@@ -112,7 +107,7 @@
 <body>
   <header>
     <h1>Staartdeling</h1>
-    <p class="sub">Bladstijl: deeltal als cellen, dikke verticale lijn, deler rechts met horizontale dikke lijn. Simpel & overzichtelijk.</p>
+    <p class="sub">Klassieke bladstijl: <strong>deeltal links</strong> → <strong>dikke verticale lijn</strong> → <strong>deler rechts</strong> met <strong>horizontale lijn</strong>, quotiënt eronder.</p>
   </header>
 
   <!-- Instellingen (compact, naast elkaar) -->
@@ -139,22 +134,20 @@
   <main>
     <section class="board" id="board" aria-label="Staartdeling">
       <div class="head">
-        <!-- Linkerkop: deeltal als cellen -->
+        <!-- LINKS: deeltal als cellen -->
         <div class="cells" id="cells"></div>
 
-        <!-- Dikke verticale lijn -->
+        <!-- MIDDEN: dikke verticale lijn -->
         <div class="vline"></div>
 
-        <!-- Rechterkop: quotiënt + deler met horizontale bar -->
+        <!-- RECHTS: deler boven, horizontale bar, quotient eronder -->
         <div class="right">
+          <div class="divisorTop"><div class="divisorBox" id="divisor">—</div></div>
+          <div class="hbar" id="hbar"></div>
           <div class="quot" id="quot"></div>
-          <div class="divisorBar">
-            <div class="divisorBox" id="divisor">—</div>
-            <div class="barWrap"><div class="bar" id="bar"></div></div>
-          </div>
         </div>
 
-        <!-- Stappen (links onder de cells) -->
+        <!-- STAPPEN: links onder het deeltal -->
         <div class="steps" id="steps"></div>
       </div>
 
@@ -182,7 +175,7 @@
     enableCheck: () => $('#enableCheck').checked,
     cells: () => $('#cells'),
     quot: () => $('#quot'),
-    bar: () => $('#bar'),
+    hbar: () => $('#hbar'),
     divisor: () => $('#divisor'),
     steps: () => $('#steps'),
     checkDetails: () => $('#checkDetails'),
@@ -248,7 +241,7 @@
 
   function clear(n){ n.innerHTML=''; }
 
-  /* === Kop opbouw volgens blad === */
+  /* LINKS: deeltal als cellen (en evt. extra nullen) */
   function buildCells(node, dividend, toDecimals){
     clear(node);
     String(dividend).split('').forEach(d=>{
@@ -263,31 +256,29 @@
     }
   }
 
-  function buildQuotient(node, plan){
-    clear(node);
+  /* RECHTS: quotiënt onder de horizontale dikke lijn */
+  function buildQuotientAndBar(quotNode, barNode, plan){
+    clear(quotNode);
     const makeQ = (exp) => {
       const i=document.createElement('input');
       i.type='text'; i.maxLength=1; i.inputMode='numeric'; i.className='qd';
       i.setAttribute('data-exp', exp); i.placeholder='·';
       return i;
     };
-    plan.qDigits.forEach(d=> node.appendChild(makeQ(d)));
+    // quotiënt-vakjes
+    plan.qDigits.forEach(d=> quotNode.appendChild(makeQ(d)));
     if (plan.decDigits.length){
       const comma=document.createElement('span'); comma.textContent=','; comma.style.margin='0 .1rem';
-      node.appendChild(comma);
-      plan.decDigits.forEach(d=> node.appendChild(makeQ(d)));
+      quotNode.appendChild(comma);
+      plan.decDigits.forEach(d=> quotNode.appendChild(makeQ(d)));
     }
-
-    // Stel bar-lengte afhankelijk van #qd
+    // horizontale balk lengte = #quotiënt-vakjes
     const qCount = plan.qDigits.length + plan.decDigits.length;
-    // elke qd ≈ var(--cellW) + 0.15rem marge → benaderen met calc
-    node.style.setProperty('--qCount', qCount);
-    // 2.1ch + ~0.3rem totale breedte per vakje
-    const est = `calc(${qCount} * (2.1ch + .30rem))`;
-    dom.bar().style.setProperty('width', est);
+    const est = `calc(${qCount} * (2.1ch + .30rem))`; // vakbreedte + marge
+    barNode.style.setProperty('width', est);
   }
 
-  /* === Stappen (simpel gehouden) === */
+  /* STAPPEN: simpel gehouden (product/rest/laat zakken) */
   function buildSteps(node, divisor, plan){
     clear(node);
     plan.steps.forEach((s,i)=>{
@@ -313,7 +304,7 @@
       const hint=document.createElement('span'); hint.className='hint'; hint.textContent=`${s.part} − (${divisor}×q) = rest`;
       r2.append(lab2,rem,hint);
 
-      // laat zakken (alleen tonen als er iets te zakken is)
+      // laat zakken
       const r3=document.createElement('div'); r3.className='row';
       const lab3=document.createElement('span'); lab3.textContent='laat zakken:';
       const b=document.createElement('span'); b.textContent = (s.bring===null)? '—' : String(s.bring);
@@ -358,7 +349,7 @@
   }
 
   function validate(current){
-    // quotiënt-cellen (rechtsboven)
+    // quotiënt-cellen (onder de horizontale lijn rechts)
     $$('#quot .qd').forEach(inp=>{
       const exp = String(inp.dataset.exp);
       const got = (inp.value||'').trim();
@@ -437,12 +428,14 @@
     const prob = generateProblem({ wantNoRemainder, toDecimals: dom.toDecimals() });
     const plan = planDivision(prob);
 
-    // Kop
+    // LINKS (deeltal)
     buildCells(dom.cells(), prob.dividend, prob.toDecimals);
-    buildQuotient(dom.quot(), plan);
-    dom.divisor().textContent = String(prob.divisor);
 
-    // Stappen
+    // RECHTS (deler, bar, quotiënt)
+    dom.divisor().textContent = String(prob.divisor);
+    buildQuotientAndBar(dom.quot(), dom.hbar(), plan);
+
+    // STAPPEN
     buildSteps(dom.steps(), prob.divisor, plan);
 
     // Controle
@@ -456,7 +449,7 @@
   dom.btnNew().addEventListener('click', newExercise);
   dom.btnReset().addEventListener('click', ()=>{
     [dom.cells(), dom.quot(), dom.steps(), dom.checkHost()].forEach(n=> n.innerHTML='');
-    dom.divisor().textContent='—'; dom.bar().style.removeProperty('width');
+    dom.divisor().textContent='—'; dom.hbar().style.removeProperty('width');
   });
   dom.btnSolution().addEventListener('click', ()=>{ if (!currentPlan) return; fillSolution(); validate(currentProblem); });
   dom.btnCheck().addEventListener('click', ()=>{
