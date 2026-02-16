@@ -1,579 +1,418 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staartdeling — Interactieve oefensite</title>
-  <meta name="description" content="Oefen staartdelingen interactief: met of zonder rest, optioneel verder tot 0,001 en met controle-rooster." />
-  <style>
-    /* ====== Ingebouwde CSS ====== */
-    * { box-sizing: border-box; }
-    :root {
-      --bg: #fff;
-      --ink: #111;
-      --muted: #666;
-      --accent: #1f6feb;
-      --ok: #0a7d2b;
-      --err: #cc1e1e;
-      --grid: #e5e7eb;
-    }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, sans-serif; margin: 0; color: var(--ink); background: var(--bg); }
-    header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--grid); }
-    header h1 { margin: 0; font-size: 1.6rem; }
-    .subtitle { margin: .25rem 0 0; color: var(--muted); }
-    .controls { padding: 1rem 1.25rem; display: grid; gap: .75rem; border-bottom: 1px solid var(--grid); }
-    .controls form { display: grid; gap: .75rem; }
-    fieldset { border: 1px solid var(--grid); padding: .5rem .75rem; border-radius: .5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; }
-    legend { padding: 0 .25rem; color: var(--muted); }
-    .ranges { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .ranges input { width: 8rem; }
-    .buttons { display: flex; gap: .5rem; flex-wrap: wrap; }
-    button { padding: .5rem .75rem; border-radius: .5rem; border: 1px solid var(--grid); background: #f6f8fa; cursor: pointer; }
-    button:hover { border-color: var(--accent); }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Staartdeling — klassiek haakje</title>
+<meta name="description" content="Interactieve staartdelingen met klassiek haakje; automatisch gekozen sommen, rood‑gemarkeerde fouten met uitleg, controle, en optioneel tot 0,001." />
+<style>
+  /* ====== Basis ====== */
+  :root{
+    --ink:#111; --muted:#667085; --grid:#e5e7eb; --accent:#1f6feb;
+    --ok:#15803d; --err:#b91c1c; --paper:#ffffff; --chip:#f6f8fa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fafafa;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif}
+  header{padding:.9rem 1rem;border-bottom:1px solid var(--grid);background:#fff;position:sticky;top:0;z-index:10}
+  h1{margin:0;font-size:1.35rem}
+  .sub{margin:.2rem 0 0;color:var(--muted);font-size:.95rem}
 
-    main { padding: 1rem 1.25rem; }
-    .long-division { max-width: 760px; padding: 1rem; border: 1px solid var(--grid); border-radius: .75rem; background: #fff; }
-    .long-division .top { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: .5rem; }
-    .long-division .divisor { padding: .25rem .5rem; border: 2px solid var(--ink); border-right: none; font-weight: 600; min-width: 3.5rem; text-align: right; }
-    .long-division .radical { position: relative; display: grid; }
-    .long-division .radical .dividend { padding: .25rem .5rem; border-top: 2px solid var(--ink); border-right: 2px solid var(--ink); min-height: 2rem; min-width: 14rem; font-weight: 600; }
-    .long-division .radical .bar { position: absolute; left: 0; bottom: -2px; right: 0; height: 2px; background: var(--ink); }
-    .long-division .quotient { min-height: 2rem; min-width: 9rem; border-bottom: 2px solid var(--ink); padding: .25rem .5rem; font-weight: 600; text-align: left; }
-    .long-division .quotient input { width: 1.8ch; text-align: center; }
+  /* ====== Compacte toolbar (instellingen) ====== */
+  .toolbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;padding:.7rem 1rem;border-bottom:1px solid var(--grid);background:#fff}
+  .group{display:flex;align-items:center;gap:.5rem;background:var(--chip);border:1px solid var(--grid);border-radius:.6rem;padding:.35rem .6rem}
+  .group label{display:flex;align-items:center;gap:.35rem;font-size:.95rem;white-space:nowrap}
+  .btns{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+  button{border:1px solid var(--grid);background:#fff;border-radius:.55rem;padding:.45rem .7rem;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  main{padding:1rem}
 
-    .work { margin-top: .75rem; border-top: 1px dashed var(--grid); padding-top: .75rem; display: grid; gap: .5rem; }
-    .step { display: grid; grid-template-columns: auto 1fr; gap: .5rem; align-items: center; }
-    .step .labels { color: var(--muted); font-size: .9rem; min-width: 10rem; }
-    .step .row { display: grid; grid-template-columns: minmax(8rem, 1fr) 5rem auto 7rem auto 6rem; gap: .4rem; align-items: center; }
-    .step .row span { text-align: center; color: #333; }
+  /* ====== Klassiek haakje-layout ====== */
+  .lv{max-width:860px;background:var(--paper);border:1px solid var(--grid);border-radius:.8rem;padding:1rem;margin:auto}
+  .lv-head{display:grid;grid-template-columns:auto 1fr;gap:.5rem;align-items:end}
 
-    input[type="text"],
-    input[inputmode="numeric"],
-    input[type="number"] { padding: .35rem .45rem; border: 1px solid var(--grid); border-radius: .4rem; font: inherit; background: #fff; }
-    input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-    input.digit { width: 2ch; text-align: center; }
+  /* Haakje: deler links in box, rechts 'radical' met dikke bovenlijn en linkslijn */
+  .lv-divisor{
+    padding:.25rem .5rem;border:2px solid var(--ink);border-right:none;
+    min-width:3.5rem;text-align:right;font-weight:700;background:#fff;border-top-left-radius:.3rem;border-bottom-left-radius:.3rem;
+  }
+  .lv-radical{position:relative;display:block;min-width:16rem}
+  .lv-radical::before{ /* top-lijn van het haakje */
+    content:"";position:absolute;left:0;right:0;top:-2px;height:2px;background:var(--ink);
+  }
+  .lv-radical::after{ /* linkse verticale lijn van het haakje */
+    content:"";position:absolute;left:0;top:-2px;bottom:calc(100% - 2px);width:2px;background:var(--ink);
+  }
+  .lv-quot{position:absolute;left:.4rem;right:.4rem;bottom:100%;padding:0 .25rem .15rem .35rem;text-align:left;font-weight:700}
+  .lv-quot input.dig{width:1.8ch;text-align:center;border:1px solid var(--grid);border-radius:.3rem;padding:.15rem .2rem;margin-right:.1rem}
+  .comma{margin:0 .2rem}
 
-    .error { border-color: var(--err) !important; background: #fee2e2; }
-    .error::placeholder { color: #b91c1c; }
-    .error.demo { padding: .1rem .25rem; border: 1px solid var(--err); background: #fee2e2; }
-    .ok { border-color: var(--ok) !important; background: #e8f5ea; }
+  .lv-dividend{padding:.3rem .5rem .2rem .5rem;font-weight:700;min-height:2rem}
 
-    .note { margin: .5rem 0 0; color: var(--muted); font-size: .9rem; }
+  /* ====== Werkzone (zoals op blad): per stap: product, streep, rest, 'laat zakken' */
+  .steps{margin-top:.4rem;display:grid;gap:.6rem}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:.6rem}
+  .step .nr{color:var(--muted);min-width:6rem}
+  .work{display:grid;gap:.25rem}
+  .prod-row,.rem-row,.bring-row{display:flex;align-items:center;gap:.4rem}
+  .prod-row .label{color:#374151;min-width:6.5rem}
+  .rem-row .label{color:#374151;min-width:6.5rem}
+  .bring-row .label{color:#374151;min-width:6.5rem}
+  .hline{height:2px;background:var(--ink);margin:.1rem 0 .2rem 0}
+  input.num{width:9ch;text-align:right;border:1px solid var(--grid);border-radius:.35rem;padding:.28rem .4rem;background:#fff}
 
-    /* Controle */
-    #checkDetails { margin-top: 1rem; }
-    .checker { display: grid; gap: .5rem; border: 1px solid var(--grid); border-radius: .5rem; padding: .75rem; max-width: 760px; background: #fff; }
-    .checker .row { display: grid; grid-template-columns: auto 1fr auto auto auto 1fr; gap: .35rem; align-items: center; }
-    .checker .has-rest { grid-template-columns: auto 1fr auto 1fr; }
-    .checker input { width: 12ch; text-align: right; }
-    .checker .hint { color: var(--muted); }
+  .ok{background:#e8f5ea !important;border-color:#16a34a !important}
+  .err{background:#fee2e2 !important;border-color:var(--err) !important}
+  .hint{color:var(--muted);font-size:.95rem;margin:.2rem 0 0}
 
-    /* Print */
-    @media print {
-      header, .controls, footer { display: none !important; }
-      body { margin: 0.5cm; }
-      .long-division, .checker { break-inside: avoid; border: none; }
-    }
+  /* ====== Controle-rooster ====== */
+  details{margin-top:1rem}
+  .check{border:1px solid var(--grid);border-radius:.6rem;padding:.75rem;background:#fff;max-width:860px}
+  .check .row{display:grid;grid-template-columns:auto 1fr auto auto auto 1fr;gap:.35rem;align-items:center}
+  .check .has-rest{grid-template-columns:auto 1fr auto 1fr}
+  .check input{width:12ch;text-align:right;border:1px solid var(--grid);border-radius:.35rem;padding:.28rem .4rem;background:#fff}
+  summary{cursor:pointer}
 
-    /* Klein scherm */
-    @media (max-width: 560px){
-      .step .row { grid-template-columns: 1fr 4rem auto 6rem auto 5rem; }
-      .step .labels { min-width: auto; }
-      .long-division .radical .dividend { min-width: 10rem; }
-    }
-  </style>
+  /* Print */
+  @media print{
+    header,.toolbar,footer{display:none !important}
+    main{padding:0}
+    .lv,.check{border:none}
+  }
+</style>
 </head>
 <body>
   <header>
     <h1>Staartdeling</h1>
-    <p class="subtitle">Één oefening per keer • fouten rood gemarkeerd met uitleg bij hover</p>
+    <p class="sub">Klassieke uitwerking met haakje, producten, horizontale strepen, rest en “laat zakken”.</p>
   </header>
 
-  <section class="controls" aria-labelledby="instellingen-h2">
-    <h2 id="instellingen-h2">Instellingen</h2>
-    <form id="settingsForm">
-      <fieldset>
-        <legend>Oefeningstype</legend>
-        <label><input type="radio" name="rest" value="zonder" checked> Deling die uitkomt (géén rest)</label>
-        <label><input type="radio" name="rest" value="met"> Deling met rest</label>
-      </fieldset>
+  <!-- Compacte instellingen naast elkaar -->
+  <div class="toolbar" aria-label="Instellingen">
+    <div class="group" role="radiogroup" aria-label="Oefeningstype">
+      <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
+      <label><input type="radio" name="rest" value="met"> met rest</label>
+    </div>
+    <div class="group">
+      <label><input type="checkbox" id="toDecimals"> tot <strong>0,001</strong></label>
+    </div>
+    <div class="group">
+      <label><input type="checkbox" id="enableCheck"> controle</label>
+    </div>
 
-      <fieldset>
-        <legend>Decimalen</legend>
-        <label>
-          <input type="checkbox" id="toDecimals"> Ga verder tot <strong>0,001</strong> (max. 3 decimalen)
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Controle</legend>
-        <label>
-          <input type="checkbox" id="enableCheck"> Toon controle‑rooster
-        </label>
-      </fieldset>
-
-      <div class="ranges">
-        <label>Deeltal (2–10000):
-          <input id="rangeDividend" type="number" min="2" max="10000" step="1" placeholder="(automatisch)"/>
-        </label>
-        <label>Deler (2–20):
-          <input id="rangeDivisor" type="number" min="2" max="20" step="1" placeholder="(automatisch)"/>
-        </label>
-      </div>
-
-      <div class="buttons">
-        <button type="button" id="btnNew">Nieuwe oefening</button>
-        <button type="button" id="btnCheck">Nakijken</button>
-        <button type="button" id="btnSolution">Toon oplossing</button>
-        <button type="button" id="btnReset">Wissen</button>
-      </div>
-    </form>
-  </section>
+    <div class="btns">
+      <button id="btnNew" type="button">Nieuwe oefening</button>
+      <button id="btnCheck" type="button">Nakijken</button>
+      <button id="btnSolution" type="button">Oplossing</button>
+      <button id="btnReset" type="button">Wissen</button>
+    </div>
+  </div>
 
   <main>
-    <section id="exercise" aria-labelledby="oefening-h2">
-      <h2 id="oefening-h2">Oefening</h2>
+    <section class="lv" id="lv" aria-label="Staartdeling">
+      <div class="lv-head">
+        <div class="lv-divisor" id="divisor">—</div>
+        <div class="lv-radical">
+          <div class="lv-quot" id="quot"></div>
+          <div class="lv-dividend" id="dividend">—</div>
+        </div>
+      </div>
+      <div class="steps" id="steps"></div>
 
-      <!-- Hoofd-oefening -->
-      <div id="divisionHost" class="division"></div>
-
-      <!-- Controle-rooster (apart openklapbaar) -->
       <details id="checkDetails">
         <summary>Controle‑rooster</summary>
-        <div id="checkHost" class="check"></div>
+        <div class="check" id="checkHost"></div>
       </details>
     </section>
   </main>
 
-  <footer>
-    <p><small>Tip: ga met de muis op een <span class="error demo">rode cel</span> staan om de feedback te lezen.</small></p>
+  <footer style="padding:1rem;color:#6b7280">
+    <small>Tip: hover op een <span style="background:#fee2e2;border:1px solid #b91c1c;border-radius:.2rem;padding:.05rem .2rem;">rode cel</span> voor uitleg.</small>
   </footer>
 
-  <!-- Sjabloon: staartdeling -->
-  <template id="tpl-division">
-    <div class="long-division" role="group" aria-label="Staartdeling">
-      <div class="top">
-        <div class="divisor" aria-label="Deler"></div>
-        <div class="radical">
-          <div class="dividend" aria-label="Deeltal"></div>
-          <div class="bar"></div>
-        </div>
-        <div class="quotient" aria-label="Quotiënt (boven de staart)"></div>
-      </div>
+<script>
+(function(){
+  const settings = { dividendMax: 10000, divisorMax: 20 };
 
-      <div class="work" aria-label="Werkzone (tussenproducten)"></div>
-      <p class="note"></p>
-    </div>
-  </template>
+  // DOM helpers
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => [...document.querySelectorAll(sel)];
+  const dom = {
+    rest: () => $$('input[name="rest"]').find(r=>r.checked).value,
+    toDecimals: () => $('#toDecimals').checked,
+    enableCheck: () => $('#enableCheck').checked,
+    divisor: () => $('#divisor'),
+    dividend: () => $('#dividend'),
+    quot: () => $('#quot'),
+    steps: () => $('#steps'),
+    checkDetails: () => $('#checkDetails'),
+    checkHost: () => $('#checkHost'),
+    btnNew: () => $('#btnNew'),
+    btnCheck: () => $('#btnCheck'),
+    btnSolution: () => $('#btnSolution'),
+    btnReset: () => $('#btnReset')
+  };
 
-  <!-- Sjabloon: controle -->
-  <template id="tpl-check">
-    <div class="checker" role="group" aria-label="Controle">
-      <div class="row">
-        <label>Quotiënt:</label>
-        <input class="q-input" inputmode="numeric" autocomplete="off" />
-        <span>×</span>
-        <span class="d">?</span>
-        <span>=</span>
-        <input class="prod-input" inputmode="numeric" autocomplete="off" />
-      </div>
-      <div class="row has-rest">
-        <label>+ rest:</label>
-        <input class="r-input" inputmode="numeric" autocomplete="off" />
-        <span>=</span>
-        <input class="sum-input" inputmode="numeric" autocomplete="off" />
-      </div>
-      <p class="hint">
-        Vul het quotiënt in, vermenigvuldig met de deler en tel er (indien nodig) de rest bij.
-        Het resultaat moet gelijk zijn aan het deeltal.
-      </p>
-    </div>
-  </template>
+  // Utilities
+  const rnd = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 
-  <!-- ====== Ingebouwde JavaScript ====== -->
-  <script>
-    (function(){
-      const settings = { dividendMax: 10000, divisorMax: 20 };
+  function generateProblem({wantNoRemainder, toDecimals}){
+    let divisor = rnd(2, settings.divisorMax);
+    let dividend;
+    if (wantNoRemainder){
+      const q = rnd(2, Math.max(2, Math.floor(settings.dividendMax / divisor)));
+      dividend = divisor * q;
+    } else {
+      dividend = rnd(2, settings.dividendMax);
+      if (dividend % divisor === 0) dividend += 1;
+    }
+    return { dividend, divisor, toDecimals };
+  }
 
-      const dom = {
-        restRadios: () => [...document.querySelectorAll('input[name="rest"]')],
-        toDecimals: () => document.getElementById('toDecimals'),
-        enableCheck: () => document.getElementById('enableCheck'),
-        rangeDividend: () => document.getElementById('rangeDividend'),
-        rangeDivisor: () => document.getElementById('rangeDivisor'),
-        btnNew: () => document.getElementById('btnNew'),
-        btnCheck: () => document.getElementById('btnCheck'),
-        btnSolution: () => document.getElementById('btnSolution'),
-        btnReset: () => document.getElementById('btnReset'),
-        divisionHost: () => document.getElementById('divisionHost'),
-        checkDetails: () => document.getElementById('checkDetails'),
-        checkHost: () => document.getElementById('checkHost'),
-        tplDivision: () => document.getElementById('tpl-division'),
-        tplCheck: () => document.getElementById('tpl-check')
-      };
+  function planDivision({dividend, divisor, toDecimals}){
+    const digs = String(dividend).split('').map(n=>+n);
+    const steps = [];
+    let idx=0, curr=0;
+    let qDigits=[];
+    while(idx<digs.length){
+      curr = curr*10 + digs[idx];
+      const qd = Math.floor(curr/divisor);
+      const prod = qd*divisor;
+      const rem = curr - prod;
+      steps.push({ stage:(idx+1), part: curr, qDigit: qd, prod, rem, bring: digs[idx+1] ?? null });
+      qDigits.push(qd);
+      curr = rem;
+      idx++;
+    }
+    // trim leading zeros in quotient
+    while(qDigits.length>1 && qDigits[0]===0){ qDigits.shift(); steps.shift(); }
+    let remainder = curr;
 
-      const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-
-      function generateProblem(opts){
-        const wantNoRemainder = opts.rest === 'zonder';
-        const toDecimals = opts.toDecimals;
-
-        const specifiedDividend = parseInt(opts.dividend || '', 10);
-        const specifiedDivisor = parseInt(opts.divisor || '', 10);
-
-        let divisor = specifiedDivisor && specifiedDivisor >= 2 && specifiedDivisor <= settings.divisorMax
-          ? specifiedDivisor
-          : rnd(2, settings.divisorMax);
-
-        let dividend;
-
-        if (specifiedDividend && specifiedDividend >= 2 && specifiedDividend <= settings.dividendMax) {
-          dividend = specifiedDividend;
-          if (wantNoRemainder) {
-            const divisors = [];
-            for (let d = 2; d <= settings.divisorMax; d++) if (dividend % d === 0) divisors.push(d);
-            if (divisors.length) divisor = pick(divisors);
-          } else {
-            if (dividend % divisor === 0) {
-              const choices = [];
-              for (let d = 2; d <= settings.divisorMax; d++) if (dividend % d !== 0) choices.push(d);
-              if (choices.length) divisor = pick(choices);
-            }
-          }
-        } else {
-          if (wantNoRemainder) {
-            const q = rnd(2, Math.max(2, Math.floor(settings.dividendMax / divisor)));
-            dividend = divisor * q;
-          } else {
-            dividend = rnd(2, settings.dividendMax);
-            if (dividend % divisor === 0) dividend += 1;
-          }
-        }
-
-        return { dividend, divisor, toDecimals, wantNoRemainder };
+    // Decimals to 3 if requested and remainder ≠ 0
+    let decDigits=[];
+    if (toDecimals && remainder!==0){
+      let c=remainder;
+      for(let i=0;i<3;i++){
+        c*=10;
+        const qd=Math.floor(c/divisor), prod=qd*divisor, rem=c-prod;
+        steps.push({ stage:steps.length+1, part:c, qDigit:qd, prod, rem, bring:(i<2?0:null), isDec:true, decIndex:i+1 });
+        decDigits.push(qd);
+        c=rem;
+        if (c===0) break;
       }
+      remainder=c;
+    }
 
-      function planDivision({dividend, divisor, toDecimals}){
-        const digits = String(dividend).split('').map(d=>parseInt(d,10));
-        const steps = [];
-        let idx = 0;
-        let current = 0;
-        let quotientDigits = [];
-        let remainder = 0;
+    const qInt = (qDigits.length? qDigits.join('') : '0');
+    const qStr = qInt + (decDigits.length? ','+decDigits.join(''):'');
+    return { steps, qDigits, decDigits, remainder, qStr };
+  }
 
-        while (idx < digits.length) {
-          current = current * 10 + digits[idx];
-          if (current < divisor) {
-            quotientDigits.push(0);
-            steps.push({ bringDown: digits[idx], part: current, qDigit: 0, prod: 0, rem: current });
-            idx++;
-            continue;
-          }
-          const qDigit = Math.floor(current / divisor);
-          const prod = qDigit * divisor;
-          const rem = current - prod;
-          steps.push({ bringDown: digits[idx], part: current, qDigit, prod, rem });
-          quotientDigits.push(qDigit);
-          current = rem;
-          idx++;
-        }
-        remainder = current;
+  function clear(node){ node.innerHTML=''; }
 
-        while (quotientDigits.length > 1 && quotientDigits[0] === 0) {
-          quotientDigits.shift();
-          steps.shift();
-        }
+  function buildQuotInputs(qWrap, plan){
+    clear(qWrap);
+    const makeBox = (exp) => {
+      const i=document.createElement('input');
+      i.type='text'; i.maxLength=1; i.inputMode='numeric'; i.className='dig';
+      i.setAttribute('data-expected', exp);
+      i.placeholder='·';
+      return i;
+    };
+    plan.qDigits.forEach(d=> qWrap.appendChild(makeBox(d)));
+    if (plan.decDigits.length){
+      const span=document.createElement('span'); span.textContent=','; span.className='comma';
+      qWrap.appendChild(span);
+      plan.decDigits.forEach(d=> qWrap.appendChild(makeBox(d)));
+    }
+  }
 
-        let decimalDigits = [];
-        if (toDecimals && remainder !== 0) {
-          let c = remainder;
-          for (let i=0; i<3; i++) {
-            c *= 10;
-            const qd = Math.floor(c / divisor);
-            const prod = qd * divisor;
-            const rem = c - prod;
-            steps.push({ bringDown: 0, part: c, qDigit: qd, prod, rem, isDecimal:true, decimalIndex:i+1 });
-            decimalDigits.push(qd);
-            c = rem;
-            if (c === 0) break;
-          }
-          remainder = c;
-        }
+  function buildSteps(container, divisor, plan){
+    clear(container);
+    plan.steps.forEach((s,i)=>{
+      const step=document.createElement('div'); step.className='step';
+      const nr=document.createElement('div'); nr.className='nr'; nr.textContent = s.isDec? `Stap ${i+1} (decimaal ${s.decIndex})` : `Stap ${i+1}`;
+      const work=document.createElement('div'); work.className='work';
 
-        const quotient = parseInt(quotientDigits.join('') || '0', 10);
-        const qStr = quotient.toString() + (decimalDigits.length>0? ','+decimalDigits.join(''): '');
+      // Productrij
+      const prodRow=document.createElement('div'); prodRow.className='prod-row';
+      const lab1=document.createElement('div'); lab1.className='label'; lab1.textContent='product:';
+      const qIn=document.createElement('input'); qIn.className='num q'; qIn.placeholder=`q (${s.qDigit})`; qIn.setAttribute('data-exp', s.qDigit);
+      const mult=document.createElement('span'); mult.textContent='×';
+      const dSpan=document.createElement('span'); dSpan.textContent=String(divisor);
+      const eq=document.createElement('span'); eq.textContent='=';
+      const pIn=document.createElement('input'); pIn.className='num prod'; pIn.placeholder='q×d'; pIn.setAttribute('data-exp', s.prod);
+      prodRow.append(lab1,qIn,mult,dSpan,eq,pIn);
 
-        return { steps, quotientDigits, decimalDigits, remainder, qStr };
+      // Lijn + rest
+      const hline=document.createElement('div'); hline.className='hline';
+      const remRow=document.createElement('div'); remRow.className='rem-row';
+      const lab2=document.createElement('div'); lab2.className='label'; lab2.textContent='rest:';
+      const remIn=document.createElement('input'); remIn.className='num rem'; remIn.placeholder='rest'; remIn.setAttribute('data-exp', s.rem);
+      const hint=document.createElement('div'); hint.className='hint'; hint.textContent=`${s.part} − (${divisor} × q) = rest`;
+      remRow.append(lab2,remIn,hint);
+
+      // Laat zakken
+      const bring=document.createElement('div'); bring.className='bring-row';
+      const lab3=document.createElement('div'); lab3.className='label'; lab3.textContent='laat zakken:';
+      const bVal=document.createElement('div'); bVal.textContent = (s.bring===null)? '—' : String(s.bring);
+      bring.append(lab3,bVal);
+
+      work.append(prodRow,hline,remRow,bring);
+      step.append(nr,work);
+      container.append(step);
+    });
+  }
+
+  function buildCheckUI(host, problem, plan){
+    clear(host);
+    const row1=document.createElement('div'); row1.className='row';
+    const labQ=document.createElement('span'); labQ.textContent='quotiënt:';
+    const qIn=document.createElement('input'); qIn.className='q-input'; qIn.placeholder='quotiënt';
+    const times=document.createElement('span'); times.textContent='×';
+    const d=document.createElement('span'); d.textContent=String(problem.divisor);
+    const eq=document.createElement('span'); eq.textContent='=';
+    const prodIn=document.createElement('input'); prodIn.className='prod-input'; prodIn.placeholder='product';
+    row1.append(labQ,qIn,times,d,eq,prodIn);
+    host.append(row1);
+
+    if (plan.remainder!==0){
+      const row2=document.createElement('div'); row2.className='row has-rest';
+      const plusRest=document.createElement('span'); plusRest.textContent='+ rest:';
+      const rIn=document.createElement('input'); rIn.className='r-input'; rIn.placeholder='rest';
+      const eq2=document.createElement('span'); eq2.textContent='=';
+      const sumIn=document.createElement('input'); sumIn.className='sum-input'; sumIn.placeholder='deeltal';
+      row2.append(plusRest,rIn,eq2,sumIn);
+      host.append(row2);
+    }
+    const hint=document.createElement('p'); hint.className='hint';
+    hint.textContent='Vul quotiënt in, vermenigvuldig met de deler en tel er (indien nodig) de rest bij; resultaat is het deeltal.';
+    host.append(hint);
+  }
+
+  function annotate(inp, ok, msg){
+    inp.classList.remove('ok','err'); inp.removeAttribute('title');
+    if (ok===true){ inp.classList.add('ok'); }
+    if (ok===false){ inp.classList.add('err'); inp.title = msg || 'Fout'; }
+  }
+
+  function validate(current){
+    // Quotiënt
+    $$('#quot input.dig').forEach(inp=>{
+      const exp = String(inp.dataset.expected);
+      const got = (inp.value||'').trim();
+      if (got==='') { annotate(inp,null); return; }
+      annotate(inp, got===exp, got===exp?'':'Quotiënt‑cijfer klopt niet.');
+    });
+    // Stappen
+    $$('#steps .step').forEach(step=>{
+      const q = step.querySelector('.q');
+      const prod = step.querySelector('.prod');
+      const rem = step.querySelector('.rem');
+      const d = +current.divisor;
+
+      // q
+      if (q.value.trim()!==''){
+        const okQ = +q.value === +q.dataset.exp;
+        annotate(q, okQ, `Kies het grootste q zodat ${d}×q ≤ deelbaar.`);
       }
+      // product
+      if (prod.value.trim()!==''){
+        const okP = +prod.value === +prod.dataset.exp;
+        const expQ = +q.dataset.exp;
+        annotate(prod, okP, okP?'':`Product fout: ${expQ}×${d} = ${prod.dataset.exp}.`);
+      }
+      // rest
+      if (rem.value.trim()!==''){
+        const okR = +rem.value === +rem.dataset.exp;
+        annotate(rem, okR, okR?'':`Rest fout: deelbaar − (d×q) = ${rem.dataset.exp}.`);
+      }
+    });
+  }
 
-      function buildDivisionUI(host, problem, plan){
-        host.innerHTML = '';
-        const tpl = dom.tplDivision().content.cloneNode(true);
+  function fillSolution(){
+    // Quotiënt
+    $$('#quot input.dig').forEach(inp=> inp.value = inp.dataset.expected);
+    // Stappen
+    $$('#steps .step').forEach(step=>{
+      step.querySelector('.q').value = step.querySelector('.q').dataset.exp;
+      step.querySelector('.prod').value = step.querySelector('.prod').dataset.exp;
+      step.querySelector('.rem').value = step.querySelector('.rem').dataset.exp;
+    });
+  }
 
-        const root = tpl.querySelector('.long-division');
-        const dDivisor = tpl.querySelector('.divisor');
-        const dDividend = tpl.querySelector('.dividend');
-        const dQuotient = tpl.querySelector('.quotient');
-        const dWork = tpl.querySelector('.work');
-        const dNote = tpl.querySelector('.note');
+  function validateCheck(host, problem, plan){
+    const qI = host.querySelector('.q-input');
+    const pI = host.querySelector('.prod-input');
+    const rI = host.querySelector('.r-input');
+    const sI = host.querySelector('.sum-input');
 
-        dDivisor.textContent = problem.divisor.toString();
-        dDividend.textContent = problem.dividend.toLocaleString('nl-BE');
+    const qVal = Number(String(plan.qStr).replace(',','.'));
+    const targetProd = Math.floor(qVal * problem.divisor);
 
-        const qBoxes = [];
-        const totalDigits = Math.max(1, plan.quotientDigits.length);
-
-        for (let i=0;i<totalDigits;i++){
-          const inp = document.createElement('input');
-          inp.type = 'text';
-          inp.inputMode = 'numeric';
-          inp.maxLength = 1;
-          inp.className = 'digit q-digit';
-          inp.setAttribute('data-expected', plan.quotientDigits[i] ?? '');
-          inp.placeholder = '·';
-          qBoxes.push(inp);
-          dQuotient.appendChild(inp);
+    if (qI && qI.value.trim()!==''){
+      const ok = Number(String(qI.value).replace(',','.')) === qVal;
+      annotate(qI, ok, ok?'':`Quotiënt = ${plan.qStr}`);
+    }
+    if (pI && pI.value.trim()!==''){
+      annotate(pI, +pI.value===targetProd, `Product = ${targetProd}`);
+    }
+    if (rI){
+      if (plan.remainder===0){
+        if (sI && sI.value.trim()!==''){
+          annotate(sI, +sI.value===problem.dividend, 'Bij uitkomst: product = deeltal');
         }
-        if (plan.decimalDigits.length > 0) {
-          const comma = document.createElement('span');
-          comma.textContent = ',';
-          comma.style.margin = '0 .25rem';
-          dQuotient.appendChild(comma);
-          for (let i=0;i<plan.decimalDigits.length;i++){
-            const inp = document.createElement('input');
-            inp.type = 'text';
-            inp.inputMode = 'numeric';
-            inp.maxLength = 1;
-            inp.className = 'digit q-digit dec';
-            inp.setAttribute('data-expected', plan.decimalDigits[i]);
-            inp.placeholder = '·';
-            qBoxes.push(inp);
-            dQuotient.appendChild(inp);
-          }
+      } else {
+        if (rI.value.trim()!==''){
+          annotate(rI, +rI.value===plan.remainder, `Rest = ${plan.remainder}`);
         }
-
-        plan.steps.forEach((s, idx)=>{
-          const step = document.createElement('div');
-          step.className = 'step';
-          const labels = document.createElement('div');
-          labels.className = 'labels';
-          labels.textContent = s.isDecimal? `Stap ${idx+1} (decimaal ${s.decimalIndex})` : `Stap ${idx+1}`;
-          const row = document.createElement('div');
-          row.className = 'row';
-
-          const colPart = document.createElement('input');
-          colPart.className = 'part';
-          colPart.placeholder = 'deelbaar';
-          colPart.inputMode = 'numeric';
-          colPart.setAttribute('data-expected', s.part);
-
-          const colQ = document.createElement('input');
-          colQ.className = 'q';
-          colQ.placeholder = 'q';
-          colQ.inputMode = 'numeric';
-          colQ.maxLength = 2;
-          colQ.setAttribute('data-expected', s.qDigit);
-
-          const mulSign = document.createElement('span'); mulSign.textContent = '×'; mulSign.style.textAlign='center';
-
-          const colProd = document.createElement('input');
-          colProd.className = 'prod';
-          colProd.placeholder = 'q×d'
-          colProd.inputMode = 'numeric';
-          colProd.setAttribute('data-expected', s.prod);
-
-          const eq = document.createElement('span'); eq.textContent = '→ rest'; eq.style.textAlign='center';
-
-          const colRem = document.createElement('input');
-          colRem.className = 'rem';
-          colRem.placeholder = 'rest';
-          colRem.inputMode = 'numeric';
-          colRem.setAttribute('data-expected', s.rem);
-
-          row.append(colPart, colQ, mulSign, colProd, eq, colRem);
-          step.append(labels, row);
-          dWork.appendChild(step);
-        });
-
-        dNote.textContent = plan.decimalDigits.length>0
-          ? 'Er is doorgewerkt tot op 0,001 (max. 3 decimalen).'
-          : 'Werk de staartdeling uit. Vul in: deelbaar (getal waarop je deelt), quotiënt-cijfer, product en rest.';
-
-        host.appendChild(tpl);
-
-        // Plan bewaren voor validatie
-        host.firstElementChild.dataset.plan = JSON.stringify(plan);
-        host.firstElementChild.dataset.dividend = problem.dividend;
-        host.firstElementChild.dataset.divisor = problem.divisor;
-      }
-
-      function buildCheckUI(host, problem, plan){
-        host.innerHTML = '';
-        const tpl = dom.tplCheck().content.cloneNode(true);
-        tpl.querySelector('.d').textContent = String(problem.divisor);
-        if (plan.remainder === 0) tpl.querySelector('.has-rest').style.display = 'none';
-        host.appendChild(tpl);
-      }
-
-      function valueOrEmpty(inp){
-        const v = (inp.value || '').replace(/\s/g,'');
-        return v === '' ? '' : v;
-      }
-
-      function annotate(input, state, tooltip){
-        input.classList.remove('ok','error');
-        input.removeAttribute('title');
-        if (state === 'ok') input.classList.add('ok');
-        if (state === 'err') { input.classList.add('error'); input.title = tooltip || 'Fout'; }
-      }
-
-      function validateDivision(host){
-        const root = host.querySelector('.long-division');
-        if (!root) return;
-        const plan = JSON.parse(root.dataset.plan);
-        const divisor = parseInt(root.dataset.divisor,10);
-
-        const qInputs = [...root.querySelectorAll('.q-digit')];
-        qInputs.forEach(inp=>{
-          const exp = String(inp.dataset.expected);
-          const got = valueOrEmpty(inp);
-          if (got === '') { annotate(inp, null); return; }
-          annotate(inp, got === exp ? 'ok' : 'err',
-            got === exp ? '' : 'Quotiënt-cijfer klopt niet. Kies het grootste cijfer zodat ' + divisor + '×q ≤ huidige deelbaar.');
-        });
-
-        const steps = [...root.querySelectorAll('.step')];
-        steps.forEach((step, i)=>{
-          const s = plan.steps[i];
-          const colPart = step.querySelector('.part');
-          const colQ = step.querySelector('.q');
-          const colProd = step.querySelector('.prod');
-          const colRem = step.querySelector('.rem');
-
-          const valPart = valueOrEmpty(colPart);
-          const valQ = valueOrEmpty(colQ);
-          const valProd = valueOrEmpty(colProd);
-          const valRem = valueOrEmpty(colRem);
-
-          if (valPart !== '')
-            annotate(colPart, (parseInt(valPart,10)===s.part)?'ok':'err',
-              'Dit is het getal waarop je in deze stap deelt (laat eventueel een cijfer zakken).');
-
-          if (valQ !== '')
-            annotate(colQ, (parseInt(valQ,10)===s.qDigit)?'ok':'err',
-              `Het quotiënt‑cijfer moet zo groot mogelijk zijn met ${divisor}×q ≤ ${s.part}.`);
-
-          if (valProd !== '')
-            annotate(colProd, (parseInt(valProd,10)===s.prod)?'ok':'err',
-              `Product fout: ${s.qDigit}×${divisor} = ${s.prod}.`);
-
-          if (valRem !== '')
-            annotate(colRem, (parseInt(valRem,10)===s.rem)?'ok':'err',
-              `Rest fout: ${s.part} − (${divisor}×${s.qDigit}) = ${s.rem}.`);
-        });
-      }
-
-      function fillSolution(host){
-        const root = host.querySelector('.long-division');
-        if (!root) return;
-        const plan = JSON.parse(root.dataset.plan);
-
-        const qInputs = [...root.querySelectorAll('.q-digit')];
-        let qi = 0;
-        plan.quotientDigits.forEach(d=>{ if (qInputs[qi]) qInputs[qi++].value = String(d); });
-        if (plan.decimalDigits.length>0) plan.decimalDigits.forEach(d=>{ if (qInputs[qi]) qInputs[qi++].value = String(d); });
-
-        const steps = [...root.querySelectorAll('.step')];
-        steps.forEach((step, i)=>{
-          const s = plan.steps[i];
-          step.querySelector('.part').value = String(s.part);
-          step.querySelector('.q').value = String(s.qDigit);
-          step.querySelector('.prod').value = String(s.prod);
-          step.querySelector('.rem').value = String(s.rem);
-        });
-      }
-
-      function validateCheck(host, problem, plan){
-        const box = host.querySelector('.checker');
-        if (!box) return;
-        const qI = box.querySelector('.q-input');
-        const pI = box.querySelector('.prod-input');
-        const rI = box.querySelector('.r-input');
-        const sI = box.querySelector('.sum-input');
-
-        const targetProd = Math.floor(Number(String(plan.qStr).replace(',','.')) * problem.divisor);
-        const targetSum = targetProd + plan.remainder;
-
-        if (qI && qI.value !== ''){
-          const ok = Number(String(qI.value).replace(',','.')) === Number(String(plan.qStr).replace(',','.'));
-          annotate(qI, ok? 'ok':'err', ok ? '' : `Quotiënt moet ${plan.qStr} zijn.`);
-        }
-        if (pI && pI.value !== ''){
-          const ok = Number(pI.value) === targetProd;
-          annotate(pI, ok? 'ok':'err', ok ? '' : `Product moet ${targetProd} zijn (deler×quotiënt).`);
-        }
-        if (rI) {
-          if (plan.remainder === 0) {
-            rI.disabled = true;
-            if (sI && sI.value !== '') annotate(sI, Number(sI.value) === problem.dividend ? 'ok' : 'err',
-              'Bij een deling die uitkomt moet product gelijk zijn aan het deeltal.');
-          } else {
-            if (rI.value !== '') annotate(rI, Number(rI.value) === plan.remainder ? 'ok' : 'err',
-              `Rest moet ${plan.remainder} zijn.`);
-            if (sI && sI.value !== '') annotate(sI, Number(sI.value) === problem.dividend ? 'ok' : 'err',
-              `Product + rest moet ${problem.dividend} zijn.`);
-          }
+        if (sI && sI.value.trim()!==''){
+          annotate(sI, +sI.value===problem.dividend, `Product + rest = ${problem.dividend}`);
         }
       }
+    }
+  }
 
-      function wire(){
-        let currentProblem = null;
-        let currentPlan = null;
+  // State
+  let currentProblem=null, currentPlan=null;
 
-        function newExercise(){
-          const rest = dom.restRadios().find(r=>r.checked).value; // 'zonder' | 'met'
-          const toDec = dom.toDecimals().checked;
-          const prob = generateProblem({
-            rest,
-            toDecimals: toDec,
-            dividend: dom.rangeDividend().value,
-            divisor: dom.rangeDivisor().value
-          });
-          const plan = planDivision(prob);
-          buildDivisionUI(dom.divisionHost(), prob, plan);
-          buildCheckUI(dom.checkHost(), prob, plan);
-          dom.checkDetails().open = dom.enableCheck().checked;
-          currentProblem = prob;
-          currentPlan = plan;
-        }
+  function newExercise(){
+    const wantNoRemainder = (dom.rest()==='zonder');
+    const prob = generateProblem({ wantNoRemainder, toDecimals: dom.toDecimals() });
+    const plan = planDivision(prob);
 
-        dom.btnNew().addEventListener('click', newExercise);
-        dom.btnReset().addEventListener('click', ()=>{
-          dom.divisionHost().innerHTML = '';
-          dom.checkHost().innerHTML = '';
-        });
-        dom.btnSolution().addEventListener('click', ()=>{
-          if (!dom.divisionHost().firstElementChild) return;
-          fillSolution(dom.divisionHost());
-          validateDivision(dom.divisionHost());
-        });
-        dom.btnCheck().addEventListener('click', ()=>{
-          if (!dom.divisionHost().firstElementChild) return;
-          validateDivision(dom.divisionHost());
-          validateCheck(dom.checkHost(), currentProblem, currentPlan);
-        });
+    // Koptitel
+    dom.divisor().textContent = String(prob.divisor);
+    dom.dividend().textContent = String(prob.dividend);
 
-        dom.enableCheck().addEventListener('change', ()=>{
-          dom.checkDetails().open = dom.enableCheck().checked;
-        });
+    // Quotiëntvakjes & stappen
+    buildQuotInputs(dom.quot(), plan);
+    buildSteps(dom.steps(), prob.divisor, plan);
 
-        // Eerste oefening bij laden
-        newExercise();
-      }
+    // Controle
+    buildCheckUI(dom.checkHost(), prob, plan);
+    dom.checkDetails().open = dom.enableCheck();
 
-      document.addEventListener('DOMContentLoaded', wire);
-    })();
-  </script>
+    currentProblem = prob; currentPlan = plan;
+  }
+
+  // Wire
+  dom.btnNew().addEventListener('click', newExercise);
+  dom.btnReset().addEventListener('click', ()=>{
+    clear(dom.steps()); clear(dom.quot()); dom.dividend().textContent='—'; dom.divisor().textContent='—'; clear(dom.checkHost());
+  });
+  dom.btnSolution().addEventListener('click', ()=>{ if (!currentPlan) return; fillSolution(); validate(currentProblem); });
+  dom.btnCheck().addEventListener('click', ()=>{
+    if (!currentPlan) return;
+    validate(currentProblem);
+    validateCheck(dom.checkHost(), currentProblem, currentPlan);
+  });
+  // Schakelaar: controle tonen/verbergen
+  $('#enableCheck').addEventListener('change', ()=> dom.checkDetails().open = dom.enableCheck());
+
+  // Init
+  newExercise();
+})();
+</script>
 </body>
 </html>
