@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — klassieke kolomopstelling (raster)</title>
+<title>Staartdeling — klassieke kolomopstelling (raster, invulbaar)</title>
 
 <style>
 /* ============================================================
@@ -103,7 +103,7 @@ main{ padding:1rem; }
   display:flex; flex-direction:column; gap:.15rem;
 }
 
-/* Elke werkrij is een grid met precies evenveel kolommen als het deeltal (incl. komma+decimalen-visueel) */
+/* Elke werkrij is een grid met precies evenveel kolommen als links zichtbaar (incl. komma-cel) */
 .workRow{
   display:grid;
   grid-template-columns: repeat(var(--cols), var(--cell));
@@ -121,7 +121,7 @@ main{ padding:1rem; }
   background:#f7fbff;
 }
 
-/* Aftreklijn verschijnt pas als de rij content bevat — klassiek ‘subtractielijn’ */
+/* Trekstreep (aftreklijn) verschijnt pas in de REST-rij onder het product */
 .wcell.topline{
   position:relative;
 }
@@ -176,7 +176,7 @@ main{ padding:1rem; }
         <!-- Deeltal -->
         <div id="grid"></div>
 
-        <!-- Werkgebied (dynamisch #rijen, kolomopstelling; leeg & invulbaar) -->
+        <!-- Werkgebied (dynamisch #rijen; leeg & invulbaar) -->
         <div id="workArea"></div>
       </div>
 
@@ -246,6 +246,7 @@ main{ padding:1rem; }
     }
   }
 
+  // Quotiënt-raster → contenteditable
   function buildQuotGrid(node, dividend, useDecimals){
     clear(node);
     const base = String(dividend).length;
@@ -253,42 +254,15 @@ main{ padding:1rem; }
     const total = base + extra;  // NB: quotiënt krijgt geen komma-cel
     for(let i=0;i<total;i++){
       const c=document.createElement('div'); c.className='gridcell';
+      c.setAttribute('contenteditable','true');  // invulbaar
+      // enkel cijfers (en backspace/pijlen) toestaan
+      c.addEventListener('beforeinput', (e)=>{
+        if (e.inputType === 'insertText' && !/^[0-9]$/.test(e.data)) e.preventDefault();
+      });
       node.appendChild(c);
     }
     const colWidth = parseInt(getComputedStyle(node).getPropertyValue('grid-auto-columns'));
     $('#hbar').style.width = (total * colWidth) + 'px'; // horizontale balk even breed als quotGrid
-  }
-
-  /* ---------- Plan: enkel om #stappen te bepalen (we tonen geen oplossing) ---------- */
-  function countSteps(dividend, divisor, toDecimals){
-    const digs = String(dividend).split('').map(n=>+n);
-    let idx=0, current=0, steps=0;
-
-    // Integer-stappen
-    while(idx < digs.length){
-      current = current*10 + digs[idx];
-      const qd = Math.floor(current / divisor);
-      const prod = qd * divisor;
-      const rem  = current - prod;
-      // Klassiek: elke vezel (ook als qd=0) leidt tot een "kolomstap"
-      steps++;
-      current = rem;
-      idx++;
-    }
-
-    // Decimalen: enkel als aangevinkt én er nog rest is
-    if (toDecimals && current!==0){
-      for(let i=0;i<3;i++){
-        current *= 10;
-        const qd=Math.floor(current/divisor);
-        const prod=qd*divisor;
-        const rem=current-prod;
-        steps++;
-        current = rem;
-        if (current===0) break;
-      }
-    }
-    return steps;
   }
 
   /* ---------- Werkgebied bouwen (leeg, contenteditable) ---------- */
@@ -298,34 +272,56 @@ main{ padding:1rem; }
     for(let r=0;r<rows;r++){
       const row = document.createElement('div');
       row.className = 'workRow';
-      // bouw kolommen
       for(let c=0;c<cols;c++){
         const cell=document.createElement('div');
         cell.className='wcell';
         cell.setAttribute('contenteditable','true');
-        // toon/verborgen aftreklijn op basis van celinput
-        cell.addEventListener('input', ()=> updateSubtractLineForRow(row));
-        // ook bij blur/cleanup nog eens checken
-        cell.addEventListener('blur', ()=> updateSubtractLineForRow(row));
+        // Voor product-rijen (even index 0,2,4,...) willen we later de trekstreep in de rest-rij plaatsen
+        cell.addEventListener('input', ()=> handleRowInput(node, row));
+        cell.addEventListener('blur',  ()=> handleRowInput(node, row));
         row.appendChild(cell);
       }
       node.appendChild(row);
     }
   }
 
-  // Aftreklijn: verschijnt pas als de rij content bevat; span van eerste t/m laatste non-empty cel
-  function updateSubtractLineForRow(row){
-    const cells = Array.from(row.querySelectorAll('.wcell'));
-    // verwijder eerst alle toplines
-    cells.forEach(c=> c.classList.remove('topline'));
-    // vind eerste/laatste met non-empty tekst
-    const filledIdx = cells
+  // Bepaal of we een product-rij hebben en plaats de trekstreep in de rest-rij eronder
+  // Logica: rijen lopen 0..N-1; r=0,2,4,... zijn product-rijen; r+1 is de bijhorende rest-rij.
+  function handleRowInput(workArea, productRow){
+    const rows = Array.from(workArea.querySelectorAll('.workRow'));
+    const rIdx = rows.indexOf(productRow);
+    if (rIdx === -1 || rIdx % 2 !== 0) return;         // alleen product-rijen reageren
+    const restRow = rows[rIdx+1];
+    if (!restRow) return;
+
+    // 1) reset toplines in de rest-rij
+    restRow.querySelectorAll('.wcell').forEach(c=> c.classList.remove('topline'));
+
+    // 2) zoek eerste/laatste ingevulde cel in de product-rij
+    const prodCells = Array.from(productRow.querySelectorAll('.wcell'));
+    const usedIdxs = prodCells
       .map((c,i)=>({i, t:(c.textContent||'').trim()}))
       .filter(x=> x.t !== '')
       .map(x=> x.i);
-    if (filledIdx.length===0) return; // niets ingevuld: geen lijn
-    const first = Math.min(...filledIdx), last=Math.max(...filledIdx);
-    for(let i=first;i<=last;i++){ cells[i].classList.add('topline'); }
+    if (usedIdxs.length === 0) return; // niets ingevuld → geen lijn
+
+    const first = Math.min(...usedIdxs);
+    const last  = Math.max(...usedIdxs);
+
+    // 3) plaats de topline alleen in de REST-rij, onder de gebruikte product-cellen
+    const restCells = Array.from(restRow.querySelectorAll('.wcell'));
+    for(let i=first;i<=last;i++){
+      if (restCells[i]) restCells[i].classList.add('topline');
+    }
+  }
+
+  /* ---------- Aantal rijen volgens jouw regel ---------- */
+  function computeRowCount(dividend, divisor){
+    const s = String(dividend);
+    const n = s.length;                 // #cijfers in het deeltal (zonder decimalen)
+    const firstDigit = parseInt(s[0],10);
+    // Als eerste cijfer volstaat: 2*n rijen; anders 2*n - 2 rijen.
+    return (firstDigit >= divisor) ? (2*n) : (2*n - 2);
   }
 
   /* ---------- Alles samen ---------- */
@@ -342,23 +338,24 @@ main{ padding:1rem; }
     buildDivisorGrid(document.getElementById('divGrid'), divisor);
     buildQuotGrid(document.getElementById('quotGrid'), dividend, useDecimals);
 
-    // Werkgebied: exact #stappen (klassiek) met kolom-opstelling
-    const nRows = countSteps(dividend, divisor, useDecimals);
-    buildWorkArea(document.getElementById('workArea'), visualColsLeft, nRows);
+    // WERK: rijen volgens jouw regel (alleen integerdeel)
+    const nRows = computeRowCount(dividend, divisor);
+    buildWorkArea(document.getElementById('workArea'), visualColsLeft, Math.max(nRows, 0));
   }
 
   /* ---------- Events ---------- */
   document.getElementById('btnNew').addEventListener('click', newExercise);
   document.getElementById('toDecimals').addEventListener('change', newExercise);
 
-  // Wissen: maak werkveld leeg + verwijder aftreklijnen
+  // Wissen: maak werkveld & quotiënt leeg + verwijder toplines
   document.getElementById('btnReset').addEventListener('click', ()=>{
     document.querySelectorAll('#workArea .wcell').forEach(c=>{
       c.textContent=''; c.classList.remove('topline');
     });
+    document.querySelectorAll('#quotGrid .gridcell[contenteditable]').forEach(c=> c.textContent='');
   });
 
-  // (Nakijken/Oplossing laten we voor de volgende iteratie)
+  // (Nakijken/Oplossing volgen later)
 
   // Init
   newExercise();
