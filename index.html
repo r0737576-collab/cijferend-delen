@@ -3,22 +3,24 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staartdeling — raster + lijn + deler</title>
+<title>Staartdeling — rasterbasis</title>
 
 <style>
-/* --- BASIS --- */
+/* ============================================================
+   BASISSTIJLEN
+   ============================================================ */
 :root{
   --ink:#000;
   --grid:#c8c8c8;
-  --vline:4px;
-  --bar:4px;
-  --cell:38px;   /* een Excel‑achtig vierkant vakje */
+  --cell:38px;       /* Excel-achtige celgrootte */
+  --vline:4px;       /* verticale dikke lijn */
+  --bar:4px;         /* horizontale dikke lijn */
 }
 
 body{
   margin:0;
-  background:#f5f5f5;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto;
+  background:#f3f3f3;
   color:#000;
 }
 
@@ -28,18 +30,10 @@ header, .toolbar{
   padding:.8rem 1rem;
 }
 
-button{
-  padding:.4rem .7rem;
-  border:1px solid #ccc;
-  border-radius:.4rem;
-  background:white;
-  cursor:pointer;
-}
-
 .toolbar{
   display:flex;
-  gap:.6rem;
   flex-wrap:wrap;
+  gap:.6rem;
   align-items:center;
 }
 
@@ -53,68 +47,112 @@ button{
   padding:.3rem .5rem;
 }
 
+button{
+  padding:.45rem .7rem;
+  border:1px solid #bbb;
+  border-radius:.4rem;
+  background:white;
+  cursor:pointer;
+}
+
+button:hover{
+  border-color:#000;
+}
+
 main{
   padding:1rem;
 }
 
 .board{
-  background:white;
+  background:#fff;
   border:1px solid #ddd;
-  border-radius:.5rem;
+  border-radius:.6rem;
   padding:1rem;
   max-width:900px;
   margin:auto;
 }
 
-/* --- EXCEL‑RUITJES voor deeltal --- */
-#gridWrapper{
-  display:flex;
-  align-items:flex-start;
-}
+/* ============================================================
+   RASTERDEFINITIES
+   ============================================================ */
 
-/* raster links */
-#grid{
-  display:grid;
-  grid-auto-flow:column;
-  grid-auto-columns:var(--cell);
-  grid-template-rows:var(--cell);
-  gap:0;
-  border:1px solid var(--grid);
-}
-
+/* Algemene Excel-vakjes */
 .gridcell{
   width:var(--cell);
   height:var(--cell);
   border-right:1px solid var(--grid);
   border-bottom:1px solid var(--grid);
   display:flex;
-  align-items:center;
   justify-content:center;
-  font-size:1.3rem;
+  align-items:center;
   font-weight:600;
+  font-size:1.3rem;
 }
 
 .gridcell:last-child{
   border-right:none;
 }
 
-/* als decimalen aanstaan: extra vakjes */
+/* Deeltal-raster */
+#grid{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:var(--cell);
+  grid-template-rows:var(--cell);
+  border:1px solid var(--grid);
+}
+
+/* Deler-raster */
+#divGrid{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:var(--cell);
+  grid-template-rows:var(--cell);
+  border:1px solid var(--grid);
+}
+
+/* Quotiënt-raster */
+#quotGrid{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:var(--cell);
+  grid-template-rows:var(--cell);
+  border:1px solid var(--grid);
+}
+
+/* Grijze decimale cellen */
 .gray{
   color:#888;
 }
 
-/* verticale dikke lijn */
+/* ============================================================
+   VERTICALE & HORIZONTALE LIJNEN
+   ============================================================ */
 #vline{
   width:var(--vline);
-  background:var(--ink);
-  margin-left:.2rem;   /* <<< zeer kleine afstand zoals jij vroeg */
-  margin-right:.4rem;
-  min-height:130px;
-  align-self:stretch;
+  background:black;
+  margin-left:.15rem;    /* superklein zoals je vroeg */
+  margin-right:.35rem;
   border-radius:2px;
+  align-self:stretch;
 }
 
-/* rechterkant: deler + dikke horizontale lijn */
+#hbar{
+  height:var(--bar);
+  background:black;
+  border-radius:2px;
+  margin-top:.4rem;
+}
+
+/* ============================================================
+   LAYOUTSTRUCTUUR
+   ============================================================ */
+#gridWrapper{
+  display:flex;
+  align-items:flex-start;
+  gap:.3rem; /* minimale ruimte */
+}
+
 #rightSide{
   display:flex;
   flex-direction:column;
@@ -122,19 +160,6 @@ main{
   padding-top:.1rem;
 }
 
-#divisorBox{
-  border:2px solid var(--ink);
-  padding:.3rem .6rem;
-  font-weight:700;
-  font-size:1.2rem;
-}
-
-#hbar{
-  height:var(--bar);
-  width:120px; /* later dynamisch qua lengte */
-  background:var(--ink);
-  border-radius:2px;
-}
 </style>
 </head>
 
@@ -144,12 +169,15 @@ main{
   <h1>Staartdeling</h1>
 </header>
 
-<!-- 🔸 KNOPPEN: NIET AANKOMEN -->
+<!-- ============================================================
+     KNOPPEN BOVEN (NIET AANKOMEN)
+     ============================================================ -->
 <div class="toolbar">
   <div class="group">
     <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
     <label><input type="radio" name="rest" value="met"> met rest</label>
   </div>
+
   <div class="group"><label><input type="checkbox" id="toDecimals"> tot 0,001</label></div>
   <div class="group"><label><input type="checkbox" id="enableCheck"> controle</label></div>
 
@@ -159,20 +187,24 @@ main{
   <button id="btnReset">Wissen</button>
 </div>
 
+<!-- ============================================================
+     HOOFDBORD (LAYOUT BASIS)
+     ============================================================ -->
 <main>
   <section class="board">
     <div id="gridWrapper">
 
-      <!-- DEELTAL RASTER -->
+      <!-- LINKS: DEELTAL IN RASTER -->
       <div id="grid"></div>
 
-      <!-- DIKKE VERTICALE LIJN -->
+      <!-- MIDDEN: DIKKE VERTICALE LIJN -->
       <div id="vline"></div>
 
-      <!-- DELER + HORIZONTALE LIJN -->
+      <!-- RECHTS: DELER + HORIZONTALE LIJN + QUOTIENT-RUIMTE -->
       <div id="rightSide">
-        <div id="divisorBox">—</div>
+        <div id="divGrid"></div>
         <div id="hbar"></div>
+        <div id="quotGrid"></div>
       </div>
 
     </div>
@@ -180,16 +212,21 @@ main{
 </main>
 
 <script>
+/* ============================================================
+   JAVASCRIPT – DELETAL, DELER & QUOTIENT-RUIMTE
+   ============================================================ */
+
 (function(){
 
   const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const $ = s => document.querySelector(s);
 
+  /* ---------- Deeltal-raster ---------- */
   function makeGrid(dividend, decimals){
     const g = $("#grid");
     g.innerHTML = "";
 
-    // normale cijfers
+    // gewone cijfers
     String(dividend).split("").forEach(ch=>{
       const c = document.createElement("div");
       c.className = "gridcell";
@@ -197,13 +234,13 @@ main{
       g.appendChild(c);
     });
 
-    // decimalen optioneel
+    // decimale uitbreiding
     if(decimals){
       // komma
-      const comma = document.createElement("div");
-      comma.className = "gridcell";
-      comma.textContent = ",";
-      g.appendChild(comma);
+      const c = document.createElement("div");
+      c.className = "gridcell";
+      c.textContent = ",";
+      g.appendChild(c);
 
       // drie nullen
       for(let i=0;i<3;i++){
@@ -215,17 +252,54 @@ main{
     }
   }
 
+  /* ---------- Deler-raster ---------- */
+  function makeDivisorGrid(divisor){
+    const g = $("#divGrid");
+    g.innerHTML = "";
+    String(divisor).split("").forEach(ch=>{
+      const c = document.createElement("div");
+      c.className = "gridcell";
+      c.textContent = ch;
+      g.appendChild(c);
+    });
+  }
+
+  /* ---------- Quotiënt-raster ---------- */
+  function makeQuotGrid(dividend, decimals){
+    const q = $("#quotGrid");
+    q.innerHTML = "";
+
+    const base = String(dividend).length;
+    const extra = decimals ? 3 : 0;
+    const total = base + extra;
+
+    for(let i=0;i<total;i++){
+      const c = document.createElement("div");
+      c.className = "gridcell";
+      q.appendChild(c);
+    }
+
+    /* horizontale lijn automatisch op breedte */
+    const barWidth = total * parseInt(getComputedStyle(q).getPropertyValue("grid-auto-columns"));
+    $("#hbar").style.width = barWidth + "px";
+  }
+
+  /* ---------- Nieuwe oefening ---------- */
   function newExercise(){
     const dividend = rnd(2,9999);
     const divisor = rnd(2,20);
+    const decimals = $("#toDecimals").checked;
 
-    makeGrid(dividend, $("#toDecimals").checked);
-    $("#divisorBox").textContent = divisor;
+    makeGrid(dividend, decimals);
+    makeDivisorGrid(divisor);
+    makeQuotGrid(dividend, decimals);
   }
 
+  /* ---------- Listeners ---------- */
   $("#btnNew").addEventListener("click", newExercise);
   $("#toDecimals").addEventListener("change", newExercise);
 
+  /* Eerste laadmoment */
   newExercise();
 
 })();
