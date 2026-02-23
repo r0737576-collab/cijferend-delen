@@ -246,6 +246,7 @@ function makeQuotCell(idx){
 
         ensureOneExtraAfterComma();
         syncHBar();
+        updateControleIfReady();
         return;
       }
 
@@ -402,6 +403,8 @@ function makeQuotCell(idx){
     const restCells = Array.from(restRow.querySelectorAll('.wcell'));
     for (let i=first; i<=last; i++){
       if (restCells[i]) restCells[i].classList.add('topline');
+
+    updateControleIfReady();
     }
   }
 
@@ -427,11 +430,7 @@ function makeQuotCell(idx){
     buildWorkArea($('#workArea'), current.dividend, current.divisor, useDecimals, totalCols, commaIndex);
 
     setTimeout(syncHBar, 0);
-
-    // ALTIJD nieuwe controle bouwen als de checkbox aan staat
-    if (document.getElementById('enableCheck').checked) {
-      maakControle();
-    }
+    
   }
 
   /* ===============================
@@ -702,14 +701,53 @@ function makeQuotCell(idx){
      CONTROLE (quotient × deler)
   ================================== */
   document.getElementById('enableCheck').addEventListener('change', function(){
-    const controleZone = document.getElementById('controleZone');
-    if (!this.checked){
-      controleZone.innerHTML = '';
-    } else {
-      maakControle();
-    }
+  const controleZone = document.getElementById('controleZone');
+
+  if (!this.checked){
+    controleZone.innerHTML = '';
+    return;
+  }
+
+  updateControleIfReady();
+});
+
+function oefeningIsVolledig(){
+  // 1️⃣ Quotient volledig?
+  const qCells = Array.from(document.querySelectorAll('#quotGrid .gridcell'));
+  const ingevuldeQ = qCells.filter(c=>{
+    const t = (c.textContent || '').trim();
+    return t !== '' && t !== ',';
   });
 
+  if (ingevuldeQ.length === 0) return false;
+
+  // 2️⃣ Werkveld bevat invoer?
+  const werkCells = Array.from(document.querySelectorAll('#workArea .wcell'));
+  const ingevuldeWerk = werkCells.filter(c=>{
+    return (c.textContent || '').trim() !== '';
+  });
+
+  if (ingevuldeWerk.length === 0) return false;
+
+  return true;
+}
+
+function updateControleIfReady(){
+  const controleZone = document.getElementById('controleZone');
+  const checkEnabled = document.getElementById('enableCheck').checked;
+
+  if (!checkEnabled){
+    controleZone.innerHTML = '';
+    return;
+  }
+
+  if (oefeningIsVolledig()){
+    maakControle();
+  } else {
+    controleZone.innerHTML = '';
+  }
+}
+  
   function maakControle(){
     const controleZone = document.getElementById('controleZone');
 
