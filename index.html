@@ -715,7 +715,8 @@ function oefeningIsVolledig(){
   const stappen = berekenStappen(current.dividend, current.divisor, 3);
   const rows = Array.from(document.querySelectorAll('#workArea .workRow'));
 
-  // Laatste rest-rij = stapIndex * 2 + 1
+  if (stappen.length === 0) return false;
+
   const laatsteStapIndex = stappen.length - 1;
   const laatsteRestRij = rows[laatsteStapIndex * 2 + 1];
 
@@ -723,10 +724,19 @@ function oefeningIsVolledig(){
 
   const cellen = Array.from(laatsteRestRij.querySelectorAll('.wcell'));
 
-  // Kijk of er effectief iets ingevuld is
-  const ingevuld = cellen.some(c => (c.textContent || '').trim() !== '');
+  // Lees alle cijfers in volgorde
+  let ingevoerd = '';
+  cellen.forEach(c=>{
+    const t = (c.textContent || '').trim();
+    if (t !== '') ingevoerd += t;
+  });
 
-  return ingevuld;
+  if (ingevoerd === '') return false;
+
+  const ingevoerdGetal = parseInt(ingevoerd, 10);
+  const juisteRest = stappen[laatsteStapIndex].aftrek;
+
+  return ingevoerdGetal === juisteRest;
 }
 
 function updateControleIfReady(){
