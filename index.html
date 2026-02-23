@@ -83,7 +83,6 @@ main{ padding:1rem; }
 
   <button id="btnNew">Nieuwe oefening</button>
   <button id="btnCheck">Nakijken</button>
-  <button id="btnSolution">Oplossing</button>
   <button id="btnReset">Wissen</button>
 </div>
 
@@ -440,12 +439,28 @@ function makeQuotCell(idx){
   document.getElementById('toDecimals').addEventListener('change', newExercise);
 
   document.getElementById('btnReset').addEventListener('click', ()=>{
-    document.querySelectorAll('#workArea .wcell').forEach(c=>{
-      c.textContent=''; c.classList.remove('topline');
-    });
-    const q = $('#quotGrid'); const intLen = parseInt(q.dataset.intlen,10) || 1;
-    buildQuotGrid(q, intLen);
+
+  // Werkveld leegmaken + kleuren resetten
+  document.querySelectorAll('#workArea .wcell').forEach(c=>{
+    c.textContent = '';
+    c.classList.remove('topline');
+    c.style.backgroundColor = '';
+    c.title = '';
   });
+
+  // Quotient resetten + kleuren verwijderen
+  document.querySelectorAll('#quotGrid .gridcell').forEach(c=>{
+    c.style.backgroundColor = '';
+    c.title = '';
+  });
+
+  const q = $('#quotGrid'); 
+  const intLen = parseInt(q.dataset.intlen,10) || 1;
+  buildQuotGrid(q, intLen);
+
+  // Controle verwijderen (indien zichtbaar)
+  document.getElementById('controleZone').innerHTML = '';
+});
 
   /* ===============================
      AUTOMATISCHE VERBETERING
