@@ -712,24 +712,21 @@ function makeQuotCell(idx){
 });
 
 function oefeningIsVolledig(){
-  // 1️⃣ Quotient volledig?
-  const qCells = Array.from(document.querySelectorAll('#quotGrid .gridcell'));
-  const ingevuldeQ = qCells.filter(c=>{
-    const t = (c.textContent || '').trim();
-    return t !== '' && t !== ',';
-  });
+  const stappen = berekenStappen(current.dividend, current.divisor, 3);
+  const rows = Array.from(document.querySelectorAll('#workArea .workRow'));
 
-  if (ingevuldeQ.length === 0) return false;
+  // Laatste rest-rij = stapIndex * 2 + 1
+  const laatsteStapIndex = stappen.length - 1;
+  const laatsteRestRij = rows[laatsteStapIndex * 2 + 1];
 
-  // 2️⃣ Werkveld bevat invoer?
-  const werkCells = Array.from(document.querySelectorAll('#workArea .wcell'));
-  const ingevuldeWerk = werkCells.filter(c=>{
-    return (c.textContent || '').trim() !== '';
-  });
+  if (!laatsteRestRij) return false;
 
-  if (ingevuldeWerk.length === 0) return false;
+  const cellen = Array.from(laatsteRestRij.querySelectorAll('.wcell'));
 
-  return true;
+  // Kijk of er effectief iets ingevuld is
+  const ingevuld = cellen.some(c => (c.textContent || '').trim() !== '');
+
+  return ingevuld;
 }
 
 function updateControleIfReady(){
