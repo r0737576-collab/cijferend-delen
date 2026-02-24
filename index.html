@@ -521,19 +521,23 @@ function makeQuotCell(idx){
   document.getElementById('controleZone').innerHTML = '';
 });
 
-function diagnoseFout(stap, leerlingInput){
-    if(!stap || !leerlingInput) return null;
+function diagnoseFout(stap, leerlingInput, positie){
+
+    if(!stap || !leerlingInput) return "correct";
 
     const leerling = parseInt(leerlingInput,10);
 
-    // 1. Product te groot
+    // Product te groot
     if(leerling > stap.huidig){
         return "product_te_groot";
     }
 
-    // 2. Cijfer fout
-    if(leerling !== stap.q){
-        return "cijfer_fout";
+    // Cijfer fout
+    const juistePos = String(stap.q)[positie];
+    if(juistePos !== undefined){
+        if(parseInt(juistePos,10) !== leerling){
+            return "cijfer_fout";
+        }
     }
 
     return "correct";
@@ -672,8 +676,12 @@ function geefHint(type){
         return;
     }
 
-    const foutType = diagnoseFout(stap, cel.textContent);
-
+   const foutType = diagnoseFout(
+    stap,
+    cel.textContent,
+    idx
+);
+       
     if (foutType !== "correct"){
         kleurCel(
             cel,
