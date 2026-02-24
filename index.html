@@ -569,20 +569,30 @@ function makeQuotCell(idx){
 
 function diagnoseFout(stap, leerlingInput, positie){
 
-    if(!stap || !leerlingInput) return "correct";
+    if(!stap) return "correct";
+
+    if(!leerlingInput || leerlingInput.trim() === "")
+        return "correct";
 
     const leerling = parseInt(leerlingInput,10);
 
-    // 1. Quotientcijfer eerst
-    const juisteQuot = String(stap.q)[positie];
+    const qStr = String(stap.q);
 
-    if(juisteQuot !== undefined){
-        if(parseInt(juisteQuot,10) !== leerling){
+    // Quotientpositie controleren
+    if(positie !== undefined){
+
+        if(positie >= qStr.length){
+            return "correct";
+        }
+
+        const juisteCijfer = parseInt(qStr[positie],10);
+
+        if(juisteCijfer !== leerling){
             return "cijfer_fout";
         }
     }
 
-    // 2. Product controleren
+    // Product controleren (pas na quotientcheck)
     if(stap.product > stap.huidig){
         return "product_te_groot";
     }
@@ -708,44 +718,56 @@ function geefHint(type){
       if (!prodRow || !restRow) return;
 
       // PRODUCT
-      const prodCells = Array.from(prodRow.querySelectorAll('.wcell'));
-      const ingevuldProd = prodCells.filter(c => (c.textContent||'').trim() !== '');
-      const juisteProd = String(stap.product).split('');
-      const start = ingevuldProd.length - juisteProd.length;
+const prodCells = Array.from(prodRow.querySelectorAll('.wcell'));
 
-     ingevuldProd.forEach((cel, idx)=>{
+const ingevuldProd = prodCells.filter(c =>
+    (c.textContent || '').trim() !== ''
+);
 
-    const juistCijfer = juisteProd[idx - start];
+const juisteProd = String(stap.product).split('');
 
-    if (juistCijfer === undefined){
-        cel.style.backgroundColor = '';
-        cel.title = '';
+const start = Math.max(0, ingevuldProd.length - juisteProd.length);
+
+invullenProd.forEach((cel, idx)=>{
+
+    const txt = (cel.textContent || '').trim();
+
+    if(txt === ""){
+        cel.style.backgroundColor = "";
+        cel.title = "";
         return;
     }
 
-   const resultaat = validateStep(stap, {
-  cijfer: cel.textContent,
-  product: parseInt(cel.textContent || "0", 10),
-  rest: 0
-});
+    const leerlingCijfer = parseInt(txt,10);
 
-if (!resultaat.correct){
-  kleurCel(
-    cel,
-    parseInt(juistCijfer),
-    'Fout vermenigvuldiging',
-    null,
-    resultaat.hint
-  );
-  return;
-}
+    const juistCijfer = juisteProd[idx - start];
+
+    if(juistCijfer === undefined){
+        return;
+    }
+
+    const resultaat = validateStep(stap, {
+        cijfer: leerlingCijfer,
+        product: leerlingCijfer * current.divisor,
+        rest: 0
+    });
+
+    if(!resultaat.correct){
+        kleurCel(
+            cel,
+            parseInt(juistCijfer),
+            'Fout vermenigvuldiging',
+            null,
+            resultaat.hint
+        );
+        return;
+    }
 
     kleurCel(
         cel,
         parseInt(juistCijfer),
         'Fout vermenigvuldiging'
     );
-
 });
 
       // REST
