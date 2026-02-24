@@ -158,6 +158,14 @@ function validateStep(stap, leerlingStapData){
    return resultaat;
 }
 
+function leerlingIsAanHetWerken(){
+    const active = document.activeElement;
+    if(!active) return false;
+
+    if(!active.isContentEditable) return false;
+
+    return true;
+}
   
 function clear(n){ n.innerHTML=''; }
 
@@ -565,17 +573,18 @@ function diagnoseFout(stap, leerlingInput, positie){
 
     const leerling = parseInt(leerlingInput,10);
 
-    // Product te groot
-    if(leerling > stap.huidig){
-        return "product_te_groot";
-    }
+    // 1. Quotientcijfer eerst
+    const juisteQuot = String(stap.q)[positie];
 
-    // Cijfer fout
-    const juistePos = String(stap.q)[positie];
-    if(juistePos !== undefined){
-        if(parseInt(juistePos,10) !== leerling){
+    if(juisteQuot !== undefined){
+        if(parseInt(juisteQuot,10) !== leerling){
             return "cijfer_fout";
         }
+    }
+
+    // 2. Product controleren
+    if(stap.product > stap.huidig){
+        return "product_te_groot";
     }
 
     return "correct";
@@ -663,10 +672,10 @@ function geefHint(type){
     switch(type){
 
         case "product_te_groot":
-            return "👉 Kies een kleiner quotiëntcijfer. Het product mag het huidige deeltal niet overschrijden.";
+            return "👉 Vermenigvuldig correct met het gekozen quotiëntcijfer.";
 
         case "cijfer_fout":
-            return "👉 Kijk naar de grootteorde van het resultaat.";
+            return "👉 Kijk eerst of het quotiëntcijfer juist is.";
 
         case "rest_fout":
             return "👉 De rest moet kleiner blijven dan de deler.";
@@ -959,11 +968,11 @@ function updateControleIfReady(){
     return;
   }
 
-  if (oefeningIsVolledig()){
+ if(oefeningIsVolledig() && !leerlingIsAanHetWerken()){
     maakControle();
-  } else {
+} else {
     controleZone.innerHTML = '';
-  }
+}
 }
   
   function maakControle(){
