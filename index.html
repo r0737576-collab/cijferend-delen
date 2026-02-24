@@ -134,31 +134,29 @@ const buildColumns = (count, commaIdx=-1)=>
 
 function generateProblem(){
   const divisor = rnd(2,20);
-  let dividend;
 
   const allowDecimals = document.getElementById('toDecimals').checked;
 
+  let dividend;
+
   if (allowDecimals){
-    // Kies een deler die vaak mooie decimalen geeft (2 en 5 blijven goed didactisch)
-    const allowedDivisors = [2,4,5,8,10];
-    const d = allowedDivisors[rnd(0,allowedDivisors.length-1)];
+    // Maak een decimaal deeltal
 
-    dividend = rnd(2,1000);
+    const intPart = rnd(2,50);
 
-    // Maak zeker dat het NIET exact deelbaar is
-    while (dividend % d === 0){
-      dividend = rnd(2,1000);
-    }
+    // 1 tot 3 decimalen
+    const decPart = rnd(0,999);
 
-    return { dividend, divisor:d };
+    dividend = parseFloat(intPart + "." + decPart);
   }
   else {
-    // Natuurlijke uitkomst
-    const q = rnd(2, Math.floor(1000/divisor));
-    dividend = divisor * q;
+    // Enkel natuurlijke getallen
 
-    return { dividend, divisor };
+    const q = rnd(2,50);
+    dividend = divisor * q;
   }
+
+  return { dividend, divisor };
 }
 
 /* ===========================
