@@ -121,7 +121,11 @@ main{ padding:1rem; }
 
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const $   = s => document.querySelector(s);
-
+  
+function safeParseInt(txt){
+    if(!txt) return NaN;
+    return parseInt(txt.replace(/\D/g,''),10);
+}
 function validateStep(stap, leerlingStapData){
    if(!stap || !leerlingStapData)
       return { correct:false, type:"onbekend" };
@@ -571,32 +575,40 @@ function diagnoseFout(stap, leerlingInput, positie){
 
     if(!stap) return "correct";
 
-    if(!leerlingInput || leerlingInput.trim() === "")
+    const txt = (leerlingInput || "").trim();
+
+    // ⭐ Onvolledig ingevuld
+    if(txt === ""){
         return "correct";
-
-    const leerling = parseInt(leerlingInput,10);
-
-    const qStr = String(stap.q);
-
-    // Quotientpositie controleren
-    if(positie !== undefined){
-
-        if(positie >= qStr.length){
-            return "correct";
-        }
-
-        const juisteCijfer = parseInt(qStr[positie],10);
-
-        if(juisteCijfer !== leerling){
-            return "cijfer_fout";
-        }
     }
 
-    // Product controleren (pas na quotientcheck)
+    const leerling = safeParseInt(txt);
+
+    if(isNaN(leerling)) return "correct";
+
+    /*
+    ⭐ PRIORITEIT 1 — quotientcijfer
+    */
+    const juisteQuot = String(stap.q)[positie];
+
+    if(juisteQuot !== undefined){
+        if(parseInt(juisteQuot,10) !== leerling){
+            return "cijfer_fout";
+        }
+
+        return "correct";
+    }
+
+    /*
+    ⭐ PRIORITEIT 2 — product grootte
+    */
     if(stap.product > stap.huidig){
         return "product_te_groot";
     }
 
+    /*
+    ⭐ Default
+    */
     return "correct";
 }
   
@@ -695,28 +707,66 @@ function geefHint(type){
     }
 }
   
-  function verbeterQuotient(stappen){
-    const cells = Array.from(document.querySelectorAll('#quotGrid .gridcell'));
-    let stapIndex = 0;
+function verbeterWerkveld(stappen){
 
-    cells.forEach(cel=>{
-      const t = (cel.textContent || '').trim();
-      if (t === '' || t === ',') return;
-      const stap = stappen[stapIndex];
-      if (!stap) return;
-      kleurCel(cel, stap.q, 'Fout quotiëntcijfer');
-      stapIndex++;
-    });
-  }
-
-  function verbeterWerkveld(stappen){
     const rows = Array.from(document.querySelectorAll('#workArea .workRow'));
 
     stappen.forEach((stap, i)=>{
-      const prodRow = rows[i*2];
-      const restRow = rows[i*2+1];
-      if (!prodRow || !restRow) return;
 
+        const prodRow = rows[i*2];
+        if (!prodRow) return;
+
+        const prodCells = Array.from(prodRow.querySelectorAll('.wcell'));
+
+        const ingevuldProd = prodCells.filter(c =>
+            (c.textContent || '').trim() !== ''
+        );
+
+        const juisteProd = String(stap.product).split('');
+
+        const start = Math.max(0, ingevuldProd.length - juisteProd.length);
+
+        ingevuldProd.forEach((cel, idx)=>{
+
+            const txt = (cel.textContent || '').trim();
+
+            // ⭐ Probleem 2 fix
+            if(txt === ""){
+                cel.style.backgroundColor = "";
+                cel.title = "";
+                return;
+            }
+
+            const juistCijfer = juisteProd[idx - start];
+
+            if(juistCijfer === undefined) return;
+
+            const resultaat = validateStep(stap, {
+                cijfer: safeParseInt(cel.textContent),
+                product: safeParseInt(cel.textContent) * current.divisor,
+                rest: 0
+            });
+
+            if(!resultaat.correct){
+                kleurCel(
+                    cel,
+                    parseInt(juistCijfer,10),
+                    'Fout vermenigvuldiging',
+                    null,
+                    resultaat.hint
+                );
+                return;
+            }
+
+            kleurCel(
+                cel,
+                parseInt(juistCijfer,10),
+                'Fout vermenigvuldiging'
+            );
+        });
+
+    });
+}
       // PRODUCT
 const prodCells = Array.from(prodRow.querySelectorAll('.wcell'));
 
