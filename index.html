@@ -189,6 +189,13 @@ function makeCell(ch){
   return c;
 }
   
+function verbeterAlles(){
+    const stappen = berekenStappen(current.dividend, current.divisor, 3);
+    verbeterQuotient(stappen);
+    verbeterWerkveld(stappen);
+
+    controleerDecimalen();
+  }
 /* ===========================
    Opgave genereren
 =========================== */
@@ -801,14 +808,6 @@ function controleerDecimalen(){
       '<div style="color:orange;margin-top:10px;">⚠ Vul aan tot drie decimalen (0,001).</div>';
   }
 }
-  
-  function verbeterAlles(){
-    const stappen = berekenStappen(current.dividend, current.divisor, 3);
-    verbeterQuotient(stappen);
-    verbeterWerkveld(stappen);
-
-    controleerDecimalen();
-  }
 
   // Nakijk-knop
   document.getElementById('btnCheck').addEventListener('click', verbeterAlles);
