@@ -139,18 +139,26 @@ function generateProblem(){
   const allowDecimals = document.getElementById('toDecimals').checked;
 
   if (allowDecimals){
-    // Zorg dat de deling niet exact uitkomt
-    dividend = rnd(2,10000);
-    while (dividend % divisor === 0){
-      dividend = rnd(2,10000);
-    }
-  } else {
-    // Exact deelbaar
-    const q = rnd(2, Math.floor(10000/divisor));
-    dividend = divisor * q;
-  }
+    // Kies een deler die vaak mooie decimalen geeft (2 en 5 blijven goed didactisch)
+    const allowedDivisors = [2,4,5,8,10];
+    const d = allowedDivisors[rnd(0,allowedDivisors.length-1)];
 
-  return { dividend, divisor };
+    dividend = rnd(2,1000);
+
+    // Maak zeker dat het NIET exact deelbaar is
+    while (dividend % d === 0){
+      dividend = rnd(2,1000);
+    }
+
+    return { dividend, divisor:d };
+  }
+  else {
+    // Natuurlijke uitkomst
+    const q = rnd(2, Math.floor(1000/divisor));
+    dividend = divisor * q;
+
+    return { dividend, divisor };
+  }
 }
 
 /* ===========================
