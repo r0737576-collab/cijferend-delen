@@ -180,53 +180,50 @@ function buildDividendGrid(node, dividend, useDec){
 
   let s = dividend.toString();
 
-  // JavaScript gebruikt '.', maar wij tonen ','
-  if (s.includes('.')){
-  s = s.replace('.', ',');
-  }
-    
-  const intLen = s.length;
-  const totalCols = intLen + (useDec ? 4 : 0);
-
-  node.style.gridTemplateColumns =
-    buildColumns(totalCols, useDec ? intLen : -1);
-
-  for(const ch of s){
-    const c=document.createElement('div');
-    c.className='gridcell';
-    c.textContent=ch;
-    node.appendChild(c);
+  if(s.includes('.')){
+    s = s.replace('.', ',');
   }
 
-  if(useDec){
-  let parts = s.split(',');
-
+  const parts = s.split(',');
   const intPart = parts[0];
   const decPart = parts[1] || "";
 
-  const totalCols = intPart.length + 1 + 3;
+  let totalCols;
+
+  if(useDec){
+    totalCols = intPart.length + 1 + 3;
+  } else {
+    totalCols = s.replace(',','').length;
+  }
 
   node.style.gridTemplateColumns =
-    buildColumns(totalCols, intPart.length);
+    buildColumns(totalCols, useDec ? intPart.length : -1);
 
-  // Integers
+  // Integer deel
   for(const ch of intPart){
     node.appendChild(makeCell(ch));
   }
 
-  // Komma
-  node.appendChild(makeCell(','));
+  if(useDec){
+    // Komma
+    node.appendChild(makeCell(','));
 
-  // Decimalen (aanvullen tot 3 lege cellen)
-  for(let i=0;i<3;i++){
-    const ch = decPart[i] || "";
-    node.appendChild(makeCell(ch));
+    // Decimalen (max 3, padding met lege cellen)
+    for(let i=0;i<3;i++){
+      node.appendChild(makeCell(decPart[i] || ""));
+    }
+
+    return {
+      intLen:intPart.length,
+      totalCols,
+      commaIndex:intPart.length
+    };
   }
 
   return {
-    intLen: intPart.length,
-    totalCols: totalCols,
-    commaIndex: intPart.length
+    intLen:s.length,
+    totalCols,
+    commaIndex:-1
   };
 }
 
@@ -260,12 +257,22 @@ let qState = { cols:0, base:0, commaIdx:-1, maxExtraDec:3 };
 
 function buildQuotGrid(node, intLen){
   clear(node);
-  qState = { cols:intLen, base:intLen, commaIdx:-1, maxExtraDec:3 };
+
+  const base = intLen;
+  const initialCols = base + 3; // standaard 3 decimalen ruimte
+
+  qState = {
+    cols: initialCols,
+    base: base,
+    commaIdx: base,
+    maxExtraDec: 3
+  };
 
   node.dataset.intlen = String(intLen);
-  node.style.gridTemplateColumns = buildColumns(qState.cols, -1);
+  node.style.gridTemplateColumns =
+    buildColumns(initialCols, base);
 
-  for(let i=0;i<qState.cols;i++){
+  for(let i=0;i<initialCols;i++){
     node.appendChild(makeQuotCell(i));
   }
 
