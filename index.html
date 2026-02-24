@@ -423,21 +423,30 @@ function makeQuotCell(idx){
   let current = { dividend:0, divisor:0 };
 
   function newExercise(){
-    current = generateProblem();
+  current = generateProblem();
 
-    // Links
-    const { intLen, totalCols, commaIndex } = buildDividendGrid($('#grid'), current.dividend, useDecimals);
+  const useDecimals = document.getElementById('toDecimals').checked;
 
-    // Rechts
-    buildDivisorGrid($('#divGrid'), current.divisor);
-    buildQuotGrid($('#quotGrid'), intLen);
+  // Links
+  const { intLen, totalCols, commaIndex } =
+    buildDividendGrid($('#grid'), current.dividend, useDecimals);
 
-    // Werkveld
-    buildWorkArea($('#workArea'), current.dividend, current.divisor, useDecimals, totalCols, commaIndex);
+  // Rechts
+  buildDivisorGrid($('#divGrid'), current.divisor);
+  buildQuotGrid($('#quotGrid'), intLen);
 
-    setTimeout(syncHBar, 0);
-    
-  }
+  // Werkveld
+  buildWorkArea(
+    $('#workArea'),
+    current.dividend,
+    current.divisor,
+    useDecimals,
+    totalCols,
+    commaIndex
+  );
+
+  setTimeout(syncHBar, 0);
+}
 
   /* ===============================
      EVENTS (knoppen)
