@@ -136,24 +136,22 @@ const buildColumns = (count, commaIdx=-1)=>
    Opgave genereren
 =========================== */
 
-function generateProblem(noRemainder){
+function generateProblem(){
   const divisor = rnd(2,20);
   let dividend;
 
   const allowDecimals = document.getElementById('toDecimals').checked;
 
-  if (!allowDecimals){
-    // Enkel natuurlijke uitkomst
-    const q = rnd(2, Math.floor(10000/divisor));
-    dividend = divisor * q;
-  } 
-  else {
-    // Zorg dat er effectief een rest is
+  if (allowDecimals){
+    // Forceer niet-exact deelbare oefening
     dividend = rnd(2,10000);
-
     if (dividend % divisor === 0){
       dividend += rnd(1, divisor - 1);
     }
+  } else {
+    // Altijd natuurlijke uitkomst
+    const q = rnd(2, Math.floor(10000/divisor));
+    dividend = divisor * q;
   }
 
   return { dividend, divisor };
@@ -432,7 +430,7 @@ function makeQuotCell(idx){
     const wantNoRemainder = (document.querySelector('input[name="rest"]:checked').value === 'zonder');
     const useDecimals = document.getElementById('toDecimals').checked;
 
-    current = generateProblem(wantNoRemainder);
+    current = generateProblem();
 
     // Links
     const { intLen, totalCols, commaIndex } = buildDividendGrid($('#grid'), current.dividend, useDecimals);
