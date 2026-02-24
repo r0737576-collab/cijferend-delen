@@ -521,6 +521,24 @@ function makeQuotCell(idx){
   document.getElementById('controleZone').innerHTML = '';
 });
 
+function diagnoseFout(stap, leerlingInput){
+    if(!stap || !leerlingInput) return null;
+
+    const leerling = parseInt(leerlingInput,10);
+
+    // 1. Product te groot
+    if(leerling > stap.huidig){
+        return "product_te_groot";
+    }
+
+    // 2. Cijfer fout
+    if(leerling !== stap.q){
+        return "cijfer_fout";
+    }
+
+    return "correct";
+}
+  
   /* ===============================
      AUTOMATISCHE VERBETERING
   ================================== */
@@ -571,23 +589,51 @@ function makeQuotCell(idx){
     return stappen;
   }
 
-  function kleurCel(cel, juist, uitleg, extraFout = null){
-    const txt = (cel.textContent || '').trim();
-    if (txt === ''){
-      cel.style.backgroundColor = '';
-      cel.title = '';
-      return;
-    }
-    const waarde = parseInt(txt);
-    if (waarde === juist){
-      cel.style.backgroundColor = 'lightgreen';
-      cel.title = 'Juist ✔';
-    } else {
-      cel.style.backgroundColor = 'lightcoral';
-      cel.title = extraFout ? extraFout : (uitleg + ' (moet ' + juist + ')');
-    }
+  function kleurCel(cel, juist, uitleg, extraFout=null, hint=null){
+
+  const txt = (cel.textContent || '').trim();
+
+  if(txt === ''){
+    cel.style.backgroundColor='';
+    cel.title='';
+    return;
   }
 
+  const waarde = parseInt(txt);
+
+  if(waarde === juist){
+    cel.style.backgroundColor='lightgreen';
+    cel.title='Juist ✔';
+    return;
+  }
+
+  cel.style.backgroundColor='lightcoral';
+
+  if(hint){
+    cel.title = hint;
+  } else {
+    cel.title = extraFout || (uitleg + ' (moet ' + juist + ')');
+  }
+}
+
+function geefHint(type){
+
+    switch(type){
+
+        case "product_te_groot":
+            return "👉 Kies een kleiner quotiëntcijfer. Het product mag het huidige deeltal niet overschrijden.";
+
+        case "cijfer_fout":
+            return "👉 Kijk naar de grootteorde van het resultaat.";
+
+        case "rest_fout":
+            return "👉 De rest moet kleiner blijven dan de deler.";
+
+        default:
+            return "Probeer opnieuw.";
+    }
+}
+  
   function verbeterQuotient(stappen){
     const cells = Array.from(document.querySelectorAll('#quotGrid .gridcell'));
     let stapIndex = 0;
@@ -616,26 +662,36 @@ function makeQuotCell(idx){
       const juisteProd = String(stap.product).split('');
       const start = ingevuldProd.length - juisteProd.length;
 
-      ingevuldProd.forEach((cel, idx)=>{
-        const juistCijfer = juisteProd[idx - start];
-        if (juistCijfer === undefined){
-          cel.style.backgroundColor = '';
-          cel.title = '';
-          return;
-        }
+     ingevuldProd.forEach((cel, idx)=>{
 
-        if (stap.product > stap.huidig){
-          kleurCel(
+    const juistCijfer = juisteProd[idx - start];
+
+    if (juistCijfer === undefined){
+        cel.style.backgroundColor = '';
+        cel.title = '';
+        return;
+    }
+
+    const foutType = diagnoseFout(stap, cel.textContent);
+
+    if (foutType !== "correct"){
+        kleurCel(
             cel,
             parseInt(juistCijfer),
             'Fout vermenigvuldiging',
-            'Product te groot gekozen'
-          );
-          return;
-        }
+            null,
+            geefHint(foutType)
+        );
+        return;
+    }
 
-        kleurCel(cel, parseInt(juistCijfer), 'Fout vermenigvuldiging');
-      });
+    kleurCel(
+        cel,
+        parseInt(juistCijfer),
+        'Fout vermenigvuldiging'
+    );
+
+});
 
       // REST
       const restCells = Array.from(restRow.querySelectorAll('.wcell'));
