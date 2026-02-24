@@ -122,6 +122,43 @@ main{ padding:1rem; }
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const $   = s => document.querySelector(s);
 
+function validateStep(stap, leerlingStapData){
+   if(!stap || !leerlingStapData)
+      return { correct:false, type:"onbekend" };
+
+   const resultaat = {
+      correct:true,
+      type:"correct",
+      hint:""
+   };
+
+   const leerlingCijfer = parseInt(leerlingStapData.cijfer || "0",10);
+
+   if(leerlingStapData.product > stap.huidig){
+      resultaat.correct = false;
+      resultaat.type = "product_te_groot";
+      resultaat.hint = "Kies een kleiner quotiëntcijfer.";
+      return resultaat;
+   }
+
+   if(leerlingCijfer !== stap.q){
+      resultaat.correct = false;
+      resultaat.type = "cijfer_fout";
+      resultaat.hint = "Bekijk de grootteorde van het resultaat.";
+      return resultaat;
+   }
+
+   if(leerlingStapData.rest >= current.divisor){
+      resultaat.correct = false;
+      resultaat.type = "rest_fout";
+      resultaat.hint = "Rest moet kleiner zijn dan de deler.";
+      return resultaat;
+   }
+
+   return resultaat;
+}
+
+  
 function clear(n){ n.innerHTML=''; }
 
 const buildColumns = (count, commaIdx=-1)=>
@@ -280,6 +317,7 @@ function makeQuotCell(idx){
   const c=document.createElement('div');
   c.className='gridcell';
   c.contentEditable=true;
+  c.dataset.stepIndex = idx;
 
   c.addEventListener('input',()=>{
     let t=(c.textContent||'').trim();
