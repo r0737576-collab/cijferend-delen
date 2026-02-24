@@ -714,22 +714,22 @@ function geefHint(type){
         return;
     }
 
-   const foutType = diagnoseFout(
-    stap,
-    cel.textContent,
-    idx
-);
-       
-    if (foutType !== "correct"){
-        kleurCel(
-            cel,
-            parseInt(juistCijfer),
-            'Fout vermenigvuldiging',
-            null,
-            geefHint(foutType)
-        );
-        return;
-    }
+   const resultaat = validateStep(stap, {
+  cijfer: cel.textContent,
+  product: parseInt(cel.textContent || "0", 10),
+  rest: 0
+});
+
+if (!resultaat.correct){
+  kleurCel(
+    cel,
+    parseInt(juistCijfer),
+    'Fout vermenigvuldiging',
+    null,
+    resultaat.hint
+  );
+  return;
+}
 
     kleurCel(
         cel,
