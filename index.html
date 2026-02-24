@@ -223,14 +223,15 @@ function buildDividendGrid(node, dividend, useDec){
     node.appendChild(makeCell(ch));
   }
 
-  return { intLen:intPart.length, totalCols, commaIndex:intPart.length };
+  return {
+    intLen: intPart.length,
+    totalCols: totalCols,
+    commaIndex: intPart.length
+  };
 }
 
-  }
-
-  return { intLen, totalCols, commaIndex: useDec ? intLen : -1 };
+return { intLen:s.length, totalCols, commaIndex: useDec ? s.indexOf(',') : -1 };
 }
-
 
 /* ===========================
    Deler
