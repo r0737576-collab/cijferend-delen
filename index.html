@@ -139,15 +139,25 @@ const buildColumns = (count, commaIdx=-1)=>
 function generateProblem(noRemainder){
   const divisor = rnd(2,20);
   let dividend;
-  if(noRemainder){
+
+  const useDecimals = document.getElementById('toDecimals').checked;
+
+  if(noRemainder && !useDecimals){
     const q = rnd(2, Math.floor(10000/divisor));
     dividend = divisor*q;
-  } else {
+  } 
+  else {
     dividend = rnd(2,10000);
-    if(dividend % divisor === 0) dividend++;
+
+    // Zorg dat het NIET exact deelbaar is
+    if(dividend % divisor === 0){
+      dividend += rnd(1, divisor-1);
+    }
   }
+
   return { dividend, divisor };
 }
+
 
 
 /* ===========================
