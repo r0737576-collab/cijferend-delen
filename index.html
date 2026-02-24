@@ -296,11 +296,11 @@ function buildQuotGrid(node, intLen){
   const initialCols = base + 3; // standaard 3 decimalen ruimte
 
   qState = {
-    cols: initialCols,
-    base: base,
-    commaIdx: base,
-    maxExtraDec: 3
-  };
+  cols: initialCols,
+  base: base,
+  commaIdx: -1,   // <-- BELANGRIJK
+  maxExtraDec: 3
+};
 
   node.dataset.intlen = String(intLen);
   node.style.gridTemplateColumns =
