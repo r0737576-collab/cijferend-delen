@@ -83,7 +83,7 @@ main{ padding:1rem; }
     <label><input type="radio" name="rest" value="zonder" checked> uitkomst</label>
     <label><input type="radio" name="rest" value="met"> met rest</label>
   </div>
-  <div class="group"><label><input type="checkbox" id="toDecimals"> tot 0,001</label></div>
+  <label><input type="checkbox" id="toDecimals"> decimale getallen</label>
   <div class="group"><label><input type="checkbox" id="enableCheck"> controle</label></div>
 
   <button id="btnNew">Nieuwe oefening</button>
@@ -140,25 +140,24 @@ function generateProblem(noRemainder){
   const divisor = rnd(2,20);
   let dividend;
 
-  const useDecimals = document.getElementById('toDecimals').checked;
+  const allowDecimals = document.getElementById('toDecimals').checked;
 
-  if(noRemainder && !useDecimals){
+  if (!allowDecimals){
+    // Enkel natuurlijke uitkomst
     const q = rnd(2, Math.floor(10000/divisor));
-    dividend = divisor*q;
+    dividend = divisor * q;
   } 
   else {
+    // Zorg dat er effectief een rest is
     dividend = rnd(2,10000);
 
-    // Zorg dat het NIET exact deelbaar is
-    if(dividend % divisor === 0){
-      dividend += rnd(1, divisor-1);
+    if (dividend % divisor === 0){
+      dividend += rnd(1, divisor - 1);
     }
   }
 
   return { dividend, divisor };
 }
-
-
 
 /* ===========================
    Deeltal
